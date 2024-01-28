@@ -620,6 +620,64 @@ const char* operand_name(const aarch64_opnd o) {
     }
 }
 
+const char* qual_name(const aarch64_opnd_qualifier q) {
+    switch (q) {
+        case AARCH64_OPND_QLF_NIL: return "NONE";
+        case AARCH64_OPND_QLF_W: return "W";
+        case AARCH64_OPND_QLF_X: return "X";
+        case AARCH64_OPND_QLF_WSP: return "WSP";
+        case AARCH64_OPND_QLF_SP: return "SP";
+        case AARCH64_OPND_QLF_S_B: return "S_B";
+        case AARCH64_OPND_QLF_S_H: return "S_H";
+        case AARCH64_OPND_QLF_S_S: return "S_S";
+        case AARCH64_OPND_QLF_S_D: return "S_D";
+        case AARCH64_OPND_QLF_S_Q: return "S_Q";
+        case AARCH64_OPND_QLF_S_4B: return "S_4B";
+        case AARCH64_OPND_QLF_S_2H: return "S_2H";
+        case AARCH64_OPND_QLF_V_4B: return "V_4B";
+        case AARCH64_OPND_QLF_V_8B: return "V_8B";
+        case AARCH64_OPND_QLF_V_16B: return "V_16B";
+        case AARCH64_OPND_QLF_V_2H: return "V_2H";
+        case AARCH64_OPND_QLF_V_4H: return "V_4H";
+        case AARCH64_OPND_QLF_V_8H: return "V_8H";
+        case AARCH64_OPND_QLF_V_2S: return "V_2S";
+        case AARCH64_OPND_QLF_V_4S: return "V_4S";
+        case AARCH64_OPND_QLF_V_1D: return "V_1D";
+        case AARCH64_OPND_QLF_V_2D: return "V_2D";
+        case AARCH64_OPND_QLF_V_1Q: return "V_1Q";
+        case AARCH64_OPND_QLF_P_Z: return "P_Z";
+        case AARCH64_OPND_QLF_P_M: return "P_M";
+        case AARCH64_OPND_QLF_imm_tag: return "imm_tag";
+        case AARCH64_OPND_QLF_CR: return "CR";
+        case AARCH64_OPND_QLF_imm_0_7: return "imm_0_7";
+        case AARCH64_OPND_QLF_imm_0_15: return "imm_0_15";
+        case AARCH64_OPND_QLF_imm_0_31: return "imm_0_31";
+        case AARCH64_OPND_QLF_imm_0_63: return "imm_0_63";
+        case AARCH64_OPND_QLF_imm_1_32: return "imm_1_32";
+        case AARCH64_OPND_QLF_imm_1_64: return "imm_1_64";
+        case AARCH64_OPND_QLF_LSL: return "LSL";
+        case AARCH64_OPND_QLF_MSL: return "MSL";
+
+        default: throw std::runtime_error("unknown qualifier");
+    }
+}
+
+std::string to_str_array(const std::vector<std::string>& list, bool quote = true) {
+    std::string joined;
+    joined += "[";
+    for (auto i = 0; i < list.size(); ++i) {
+        if (quote) joined += "\"";
+        joined += list[i];
+        if (quote) joined += "\"";
+
+        if (list.size() - i != 1) {
+            joined += ",";
+        }
+    }
+    joined += "]";
+    return joined;
+}
+
 int main() {
     puts("[\n");
 
@@ -642,27 +700,41 @@ int main() {
         printf("\t\"specifics\": \"%s\",\n", specifics_name(specifics));
         printf("\t\"description\": \"%s\",\n", iclass_description(iclass));
 
-        std::vector<std::string> operands;
+        auto operand_count = 0;
+        {
+            std::vector<std::string> operands;
 
-        for (const auto o : x.operands) {
-            if (!o)
-                break;
+            for (const auto o : x.operands) {
+                if (!o)
+                    break;
 
-            const auto name = std::string(operand_name(o));
-            operands.push_back(name);
-        }
-
-        std::string operand_list;
-        for (auto o = 0; o < operands.size(); ++o) {
-            operand_list += "\"";
-            operand_list += operands[o];
-            operand_list += "\"";
-
-            if (operands.size() - o != 1) {
-                operand_list += ",";
+                const auto name = std::string(operand_name(o));
+                operands.push_back(name);
+                operand_count += 1;
             }
+
+            printf("\t\"operands\": %s,\n", to_str_array(operands).c_str());
         }
-        printf("\t\"operands\": [%s],\n", operand_list.c_str());
+
+        {
+            std::vector<std::string> quals;
+
+            for (const auto& ql : x.qualifiers_list) {
+                if (quals.size() + 1 >= operand_count)
+                    break;
+
+                std::vector<std::string> qs;
+                for (const auto& q : ql) {
+                    if (!q)
+                        break;
+                    
+                    qs.emplace_back(qual_name(static_cast<aarch64_opnd_qualifier>(q)));
+                }
+                quals.push_back(to_str_array(qs));
+            }
+
+            printf("\t\"operand_quals\": %s,\n", to_str_array(quals, false).c_str());
+        }
 
         if (len - i != 2)
             printf("\t\"index\": %d },\n", i);
