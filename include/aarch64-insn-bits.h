@@ -5,6 +5,8 @@
 #ifndef OPCODES_AARCH64_INSN_BITS_H
 #define OPCODES_AARCH64_INSN_BITS_H
 
+#include "bfd.h"
+#include "dis-asm.h"
 #include "aarch64-opc.h"
 
 /* copied from aarch64-opc.c */

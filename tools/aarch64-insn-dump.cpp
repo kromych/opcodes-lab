@@ -1807,9 +1807,16 @@ int main() {
                 if (!f)
                     break;
 
-                field_info.emplace_back(field_name(f));
+                auto field_spec = std::string(field_name(f));
+                field_spec += ":";
+                field_spec += std::to_string(fields[f].lsb);
+                field_spec += ":";
+                field_spec += std::to_string(fields[f].width);
+
+                field_info.emplace_back(field_spec);
             }
-            printf("\t\t\t\"fields\": %s", to_str_array(field_info).c_str());
+            printf("\t\t\t\"bit_fields\": %s",
+                   to_str_array(field_info).c_str());
 
             printf("\n\t\t}");
             if (oi + 1 < operands.size()) {
