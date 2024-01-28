@@ -6,6 +6,8 @@
 
 #include <cstdio>
 #include <stdexcept>
+#include <vector>
+#include <string>
 
 const char* iclass_name(enum aarch64_insn_class c) {
     switch (c)
@@ -246,9 +248,9 @@ const char* iclass_description(const aarch64_insn_class c) {
     }
 }
 
-const char* enumerator_name(const aarch64_op op) {
+const char* specifics_name(const aarch64_op op) {
     switch (op) {
-        case OP_NIL: return "NIL";
+        case OP_NIL: return "NONE";
         case OP_STRB_POS: return "STRB_POS";
         case OP_LDRB_POS: return "LDRB_POS";
         case OP_LDRSB_POS: return "LDRSB_POS";
@@ -335,6 +337,289 @@ const char* enumerator_name(const aarch64_op op) {
     }
 }
 
+const char* operand_name(const aarch64_opnd o) {
+    switch (o) {
+          case AARCH64_OPND_NIL: return "NONE";
+          case AARCH64_OPND_Rd: return "Rd";
+          case AARCH64_OPND_Rn: return "Rn";
+          case AARCH64_OPND_Rm: return "Rm";
+          case AARCH64_OPND_Rt: return "Rt";
+          case AARCH64_OPND_Rt2: return "Rt2";
+          case AARCH64_OPND_Rt_LS64: return "Rt_LS64";
+          case AARCH64_OPND_Rt_SP: return "Rt_SP";
+          case AARCH64_OPND_Rs: return "Rs";
+          case AARCH64_OPND_Ra: return "Ra";
+          case AARCH64_OPND_Rt_SYS: return "Rt_SYS";
+          case AARCH64_OPND_Rd_SP: return "Rd_SP";
+          case AARCH64_OPND_Rn_SP: return "Rn_SP";
+          case AARCH64_OPND_Rm_SP: return "Rm_SP";
+          case AARCH64_OPND_PAIRREG: return "PAIRREG";
+          case AARCH64_OPND_Rm_EXT: return "Rm_EXT";
+          case AARCH64_OPND_Rm_SFT: return "Rm_SFT";
+          case AARCH64_OPND_Fd: return "Fd";
+          case AARCH64_OPND_Fn: return "Fn";
+          case AARCH64_OPND_Fm: return "Fm";
+          case AARCH64_OPND_Fa: return "Fa";
+          case AARCH64_OPND_Ft: return "Ft";
+          case AARCH64_OPND_Ft2: return "Ft2";
+          case AARCH64_OPND_Sd: return "Sd";
+          case AARCH64_OPND_Sn: return "Sn";
+          case AARCH64_OPND_Sm: return "Sm";
+          case AARCH64_OPND_Va: return "Va";
+          case AARCH64_OPND_Vd: return "Vd";
+          case AARCH64_OPND_Vn: return "Vn";
+          case AARCH64_OPND_Vm: return "Vm";
+          case AARCH64_OPND_VdD1: return "VdD1";
+          case AARCH64_OPND_VnD1: return "VnD1";
+          case AARCH64_OPND_Ed: return "Ed";
+          case AARCH64_OPND_En: return "En";
+          case AARCH64_OPND_Em: return "Em";
+          case AARCH64_OPND_Em16: return "Em16";
+          case AARCH64_OPND_LVn: return "LVn";
+          case AARCH64_OPND_LVt: return "LVt";
+          case AARCH64_OPND_LVt_AL: return "LVt_AL";
+          case AARCH64_OPND_LEt: return "LEt";
+          case AARCH64_OPND_CRn: return "CRn";
+          case AARCH64_OPND_CRm: return "CRm";
+          case AARCH64_OPND_IDX: return "IDX";
+          case AARCH64_OPND_MASK: return "MASK";
+          case AARCH64_OPND_IMM_VLSL: return "IMM_VLSL";
+          case AARCH64_OPND_IMM_VLSR: return "IMM_VLSR";
+          case AARCH64_OPND_SIMD_IMM: return "SIMD_IMM";
+          case AARCH64_OPND_SIMD_IMM_SFT: return "SIMD_IMM_SFT";
+          case AARCH64_OPND_SIMD_FPIMM: return "SIMD_FPIMM";
+          case AARCH64_OPND_SHLL_IMM: return "SHLL_IMM";
+          case AARCH64_OPND_IMM0: return "IMM0";
+          case AARCH64_OPND_FPIMM0: return "FPIMM0";
+          case AARCH64_OPND_FPIMM: return "FPIMM";
+          case AARCH64_OPND_IMMR: return "IMMR";
+          case AARCH64_OPND_IMMS: return "IMMS";
+          case AARCH64_OPND_WIDTH: return "WIDTH";
+          case AARCH64_OPND_IMM: return "IMM";
+          case AARCH64_OPND_IMM_2: return "IMM_2";
+          case AARCH64_OPND_UIMM3_OP1: return "UIMM3_OP1";
+          case AARCH64_OPND_UIMM3_OP2: return "UIMM3_OP2";
+          case AARCH64_OPND_UIMM4: return "UIMM4";
+          case AARCH64_OPND_UIMM4_ADDG: return "UIMM4_ADDG";
+          case AARCH64_OPND_UIMM7: return "UIMM7";
+          case AARCH64_OPND_UIMM10: return "UIMM10";
+          case AARCH64_OPND_BIT_NUM: return "BIT_NUM";
+          case AARCH64_OPND_EXCEPTION: return "EXCEPTION";
+          case AARCH64_OPND_UNDEFINED: return "UNDEFINED";
+          case AARCH64_OPND_CCMP_IMM: return "CCMP_IMM";
+          case AARCH64_OPND_SIMM5: return "SIMM5";
+          case AARCH64_OPND_NZCV: return "NZCV";
+          case AARCH64_OPND_LIMM: return "LIMM";
+          case AARCH64_OPND_AIMM: return "AIMM";
+          case AARCH64_OPND_HALF: return "HALF";
+          case AARCH64_OPND_FBITS: return "FBITS";
+          case AARCH64_OPND_IMM_MOV: return "IMM_MOV";
+          case AARCH64_OPND_IMM_ROT1: return "IMM_ROT1";
+          case AARCH64_OPND_IMM_ROT2: return "IMM_ROT2";
+          case AARCH64_OPND_IMM_ROT3: return "IMM_ROT3";
+          case AARCH64_OPND_COND: return "COND";
+          case AARCH64_OPND_COND1: return "COND1";
+          case AARCH64_OPND_ADDR_ADRP: return "ADDR_ADRP";
+          case AARCH64_OPND_ADDR_PCREL14: return "ADDR_PCREL14";
+          case AARCH64_OPND_ADDR_PCREL19: return "ADDR_PCREL19";
+          case AARCH64_OPND_ADDR_PCREL21: return "ADDR_PCREL21";
+          case AARCH64_OPND_ADDR_PCREL26: return "ADDR_PCREL26";
+          case AARCH64_OPND_ADDR_SIMPLE: return "ADDR_SIMPLE";
+          case AARCH64_OPND_ADDR_REGOFF: return "ADDR_REGOFF";
+          case AARCH64_OPND_ADDR_SIMM7: return "ADDR_SIMM7";
+          case AARCH64_OPND_ADDR_SIMM9: return "ADDR_SIMM9";
+          case AARCH64_OPND_ADDR_SIMM10: return "ADDR_SIMM10";
+          case AARCH64_OPND_ADDR_SIMM11: return "ADDR_SIMM11";
+          case AARCH64_OPND_ADDR_UIMM12: return "ADDR_UIMM12";
+          case AARCH64_OPND_ADDR_SIMM13: return "ADDR_SIMM13";
+          case AARCH64_OPND_SIMD_ADDR_SIMPLE: return "SIMD_ADDR_SIMPLE";
+          case AARCH64_OPND_ADDR_OFFSET: return "ADDR_OFFSET";
+          case AARCH64_OPND_SIMD_ADDR_POST: return "SIMD_ADDR_POST";
+          case AARCH64_OPND_SYSREG: return "SYSREG";
+          case AARCH64_OPND_PSTATEFIELD: return "PSTATEFIELD";
+          case AARCH64_OPND_SYSREG_AT: return "SYSREG_AT";
+          case AARCH64_OPND_SYSREG_DC: return "SYSREG_DC";
+          case AARCH64_OPND_SYSREG_IC: return "SYSREG_IC";
+          case AARCH64_OPND_SYSREG_TLBI: return "SYSREG_TLBI";
+          case AARCH64_OPND_SYSREG_SR: return "SYSREG_SR";
+          case AARCH64_OPND_BARRIER: return "BARRIER";
+          case AARCH64_OPND_BARRIER_DSB_NXS: return "BARRIER_DSB_NXS";
+          case AARCH64_OPND_BARRIER_ISB: return "BARRIER_ISB";
+          case AARCH64_OPND_PRFOP: return "PRFOP";
+          case AARCH64_OPND_RPRFMOP: return "RPRFMOP";
+          case AARCH64_OPND_BARRIER_PSB: return "BARRIER_PSB";
+          case AARCH64_OPND_BTI_TARGET: return "BTI_TARGET";
+          case AARCH64_OPND_SVE_ADDR_RI_S4x16: return "SVE_ADDR_RI_S4x16";
+          case AARCH64_OPND_SVE_ADDR_RI_S4x32: return "SVE_ADDR_RI_S4x32";
+          case AARCH64_OPND_SVE_ADDR_RI_S4xVL: return "SVE_ADDR_RI_S4xVL";
+          case AARCH64_OPND_SVE_ADDR_RI_S4x2xVL: return "SVE_ADDR_RI_S4x2xVL";
+          case AARCH64_OPND_SVE_ADDR_RI_S4x3xVL: return "SVE_ADDR_RI_S4x3xVL";
+          case AARCH64_OPND_SVE_ADDR_RI_S4x4xVL: return "SVE_ADDR_RI_S4x4xVL";
+          case AARCH64_OPND_SVE_ADDR_RI_S6xVL: return "SVE_ADDR_RI_S6xVL";
+          case AARCH64_OPND_SVE_ADDR_RI_S9xVL: return "SVE_ADDR_RI_S9xVL";
+          case AARCH64_OPND_SVE_ADDR_RI_U6: return "SVE_ADDR_RI_U6";
+          case AARCH64_OPND_SVE_ADDR_RI_U6x2: return "SVE_ADDR_RI_U6x2";
+          case AARCH64_OPND_SVE_ADDR_RI_U6x4: return "SVE_ADDR_RI_U6x4";
+          case AARCH64_OPND_SVE_ADDR_RI_U6x8: return "SVE_ADDR_RI_U6x8";
+          case AARCH64_OPND_SVE_ADDR_R: return "SVE_ADDR_R";
+          case AARCH64_OPND_SVE_ADDR_RR: return "SVE_ADDR_RR";
+          case AARCH64_OPND_SVE_ADDR_RR_LSL1: return "SVE_ADDR_RR_LSL1";
+          case AARCH64_OPND_SVE_ADDR_RR_LSL2: return "SVE_ADDR_RR_LSL2";
+          case AARCH64_OPND_SVE_ADDR_RR_LSL3: return "SVE_ADDR_RR_LSL3";
+          case AARCH64_OPND_SVE_ADDR_RR_LSL4: return "SVE_ADDR_RR_LSL4";
+          case AARCH64_OPND_SVE_ADDR_RX: return "SVE_ADDR_RX";
+          case AARCH64_OPND_SVE_ADDR_RX_LSL1: return "SVE_ADDR_RX_LSL1";
+          case AARCH64_OPND_SVE_ADDR_RX_LSL2: return "SVE_ADDR_RX_LSL2";
+          case AARCH64_OPND_SVE_ADDR_RX_LSL3: return "SVE_ADDR_RX_LSL3";
+          case AARCH64_OPND_SVE_ADDR_ZX: return "SVE_ADDR_ZX";
+          case AARCH64_OPND_SVE_ADDR_RZ: return "SVE_ADDR_RZ";
+          case AARCH64_OPND_SVE_ADDR_RZ_LSL1: return "SVE_ADDR_RZ_LSL1";
+          case AARCH64_OPND_SVE_ADDR_RZ_LSL2: return "SVE_ADDR_RZ_LSL2";
+          case AARCH64_OPND_SVE_ADDR_RZ_LSL3: return "SVE_ADDR_RZ_LSL3";
+          case AARCH64_OPND_SVE_ADDR_RZ_XTW_14: return "SVE_ADDR_RZ_XTW_14";
+          case AARCH64_OPND_SVE_ADDR_RZ_XTW_22: return "SVE_ADDR_RZ_XTW_22";
+          case AARCH64_OPND_SVE_ADDR_RZ_XTW1_14: return "SVE_ADDR_RZ_XTW1_14";
+          case AARCH64_OPND_SVE_ADDR_RZ_XTW1_22: return "SVE_ADDR_RZ_XTW1_22";
+          case AARCH64_OPND_SVE_ADDR_RZ_XTW2_14: return "SVE_ADDR_RZ_XTW2_14";
+          case AARCH64_OPND_SVE_ADDR_RZ_XTW2_22: return "SVE_ADDR_RZ_XTW2_22";
+          case AARCH64_OPND_SVE_ADDR_RZ_XTW3_14: return "SVE_ADDR_RZ_XTW3_14";
+          case AARCH64_OPND_SVE_ADDR_RZ_XTW3_22: return "SVE_ADDR_RZ_XTW3_22";
+          case AARCH64_OPND_SVE_ADDR_ZI_U5: return "SVE_ADDR_ZI_U5";
+          case AARCH64_OPND_SVE_ADDR_ZI_U5x2: return "SVE_ADDR_ZI_U5x2";
+          case AARCH64_OPND_SVE_ADDR_ZI_U5x4: return "SVE_ADDR_ZI_U5x4";
+          case AARCH64_OPND_SVE_ADDR_ZI_U5x8: return "SVE_ADDR_ZI_U5x8";
+          case AARCH64_OPND_SVE_ADDR_ZZ_LSL: return "SVE_ADDR_ZZ_LSL";
+          case AARCH64_OPND_SVE_ADDR_ZZ_SXTW: return "SVE_ADDR_ZZ_SXTW";
+          case AARCH64_OPND_SVE_ADDR_ZZ_UXTW: return "SVE_ADDR_ZZ_UXTW";
+          case AARCH64_OPND_SVE_AIMM: return "SVE_AIMM";
+          case AARCH64_OPND_SVE_ASIMM: return "SVE_ASIMM";
+          case AARCH64_OPND_SVE_FPIMM8: return "SVE_FPIMM8";
+          case AARCH64_OPND_SVE_I1_HALF_ONE: return "SVE_I1_HALF_ONE";
+          case AARCH64_OPND_SVE_I1_HALF_TWO: return "SVE_I1_HALF_TWO";
+          case AARCH64_OPND_SVE_I1_ZERO_ONE: return "SVE_I1_ZERO_ONE";
+          case AARCH64_OPND_SVE_IMM_ROT1: return "SVE_IMM_ROT1";
+          case AARCH64_OPND_SVE_IMM_ROT2: return "SVE_IMM_ROT2";
+          case AARCH64_OPND_SVE_IMM_ROT3: return "SVE_IMM_ROT3";
+          case AARCH64_OPND_SVE_INV_LIMM: return "SVE_INV_LIMM";
+          case AARCH64_OPND_SVE_LIMM: return "SVE_LIMM";
+          case AARCH64_OPND_SVE_LIMM_MOV: return "SVE_LIMM_MOV";
+          case AARCH64_OPND_SVE_PATTERN: return "SVE_PATTERN";
+          case AARCH64_OPND_SVE_PATTERN_SCALED: return "SVE_PATTERN_SCALED";
+          case AARCH64_OPND_SVE_PRFOP: return "SVE_PRFOP";
+          case AARCH64_OPND_SVE_Pd: return "SVE_Pd";
+          case AARCH64_OPND_SVE_PNd: return "SVE_PNd";
+          case AARCH64_OPND_SVE_Pg3: return "SVE_Pg3";
+          case AARCH64_OPND_SVE_Pg4_5: return "SVE_Pg4_5";
+          case AARCH64_OPND_SVE_Pg4_10: return "SVE_Pg4_10";
+          case AARCH64_OPND_SVE_PNg4_10: return "SVE_PNg4_10";
+          case AARCH64_OPND_SVE_Pg4_16: return "SVE_Pg4_16";
+          case AARCH64_OPND_SVE_Pm: return "SVE_Pm";
+          case AARCH64_OPND_SVE_Pn: return "SVE_Pn";
+          case AARCH64_OPND_SVE_PNn: return "SVE_PNn";
+          case AARCH64_OPND_SVE_Pt: return "SVE_Pt";
+          case AARCH64_OPND_SVE_PNt: return "SVE_PNt";
+          case AARCH64_OPND_SVE_Rm: return "SVE_Rm";
+          case AARCH64_OPND_SVE_Rn_SP: return "SVE_Rn_SP";
+          case AARCH64_OPND_SVE_SHLIMM_PRED: return "SVE_SHLIMM_PRED";
+          case AARCH64_OPND_SVE_SHLIMM_UNPRED: return "SVE_SHLIMM_UNPRED";
+          case AARCH64_OPND_SVE_SHLIMM_UNPRED_22: return "SVE_SHLIMM_UNPRED_22";
+          case AARCH64_OPND_SVE_SHRIMM_PRED: return "SVE_SHRIMM_PRED";
+          case AARCH64_OPND_SVE_SHRIMM_UNPRED: return "SVE_SHRIMM_UNPRED";
+          case AARCH64_OPND_SVE_SHRIMM_UNPRED_22: return "SVE_SHRIMM_UNPRED_22";
+          case AARCH64_OPND_SVE_SIMM5: return "SVE_SIMM5";
+          case AARCH64_OPND_SVE_SIMM5B: return "SVE_SIMM5B";
+          case AARCH64_OPND_SVE_SIMM6: return "SVE_SIMM6";
+          case AARCH64_OPND_SVE_SIMM8: return "SVE_SIMM8";
+          case AARCH64_OPND_SVE_UIMM3: return "SVE_UIMM3";
+          case AARCH64_OPND_SVE_UIMM7: return "SVE_UIMM7";
+          case AARCH64_OPND_SVE_UIMM8: return "SVE_UIMM8";
+          case AARCH64_OPND_SVE_UIMM8_53: return "SVE_UIMM8_53";
+          case AARCH64_OPND_SVE_VZn: return "SVE_VZn";
+          case AARCH64_OPND_SVE_Vd: return "SVE_Vd";
+          case AARCH64_OPND_SVE_Vm: return "SVE_Vm";
+          case AARCH64_OPND_SVE_Vn: return "SVE_Vn";
+          case AARCH64_OPND_SVE_Za_5: return "SVE_Za_5";
+          case AARCH64_OPND_SVE_Za_16: return "SVE_Za_16";
+          case AARCH64_OPND_SVE_Zd: return "SVE_Zd";
+          case AARCH64_OPND_SVE_Zm_5: return "SVE_Zm_5";
+          case AARCH64_OPND_SVE_Zm_16: return "SVE_Zm_16";
+          case AARCH64_OPND_SVE_Zm3_INDEX: return "SVE_Zm3_INDEX";
+          case AARCH64_OPND_SVE_Zm3_11_INDEX: return "SVE_Zm3_11_INDEX";
+          case AARCH64_OPND_SVE_Zm3_19_INDEX: return "SVE_Zm3_19_INDEX";
+          case AARCH64_OPND_SVE_Zm3_22_INDEX: return "SVE_Zm3_22_INDEX";
+          case AARCH64_OPND_SVE_Zm4_11_INDEX: return "SVE_Zm4_11_INDEX";
+          case AARCH64_OPND_SVE_Zm4_INDEX: return "SVE_Zm4_INDEX";
+          case AARCH64_OPND_SVE_Zn: return "SVE_Zn";
+          case AARCH64_OPND_SVE_Zn_INDEX: return "SVE_Zn_INDEX";
+          case AARCH64_OPND_SVE_ZnxN: return "SVE_ZnxN";
+          case AARCH64_OPND_SVE_Zt: return "SVE_Zt";
+          case AARCH64_OPND_SVE_ZtxN: return "SVE_ZtxN";
+          case AARCH64_OPND_SME_Zdnx2: return "SME_Zdnx2";
+          case AARCH64_OPND_SME_Zdnx4: return "SME_Zdnx4";
+          case AARCH64_OPND_SME_Zm: return "SME_Zm";
+          case AARCH64_OPND_SME_Zmx2: return "SME_Zmx2";
+          case AARCH64_OPND_SME_Zmx4: return "SME_Zmx4";
+          case AARCH64_OPND_SME_Znx2: return "SME_Znx2";
+          case AARCH64_OPND_SME_Znx4: return "SME_Znx4";
+          case AARCH64_OPND_SME_Ztx2_STRIDED: return "SME_Ztx2_STRIDED";
+          case AARCH64_OPND_SME_Ztx4_STRIDED: return "SME_Ztx4_STRIDED";
+          case AARCH64_OPND_SME_ZAda_2b: return "SME_ZAda_2b";
+          case AARCH64_OPND_SME_ZAda_3b: return "SME_ZAda_3b";
+          case AARCH64_OPND_SME_ZA_HV_idx_src: return "SME_ZA_HV_idx_src";
+          case AARCH64_OPND_SME_ZA_HV_idx_srcxN: return "SME_ZA_HV_idx_srcxN";
+          case AARCH64_OPND_SME_ZA_HV_idx_dest: return "SME_ZA_HV_idx_dest";
+          case AARCH64_OPND_SME_ZA_HV_idx_destxN: return "SME_ZA_HV_idx_destxN";
+          case AARCH64_OPND_SME_Pdx2: return "SME_Pdx2";
+          case AARCH64_OPND_SME_PdxN: return "SME_PdxN";
+          case AARCH64_OPND_SME_Pm: return "SME_Pm";
+          case AARCH64_OPND_SME_PNd3: return "SME_PNd3";
+          case AARCH64_OPND_SME_PNg3: return "SME_PNg3";
+          case AARCH64_OPND_SME_PNn: return "SME_PNn";
+          case AARCH64_OPND_SME_PNn3_INDEX1: return "SME_PNn3_INDEX1";
+          case AARCH64_OPND_SME_PNn3_INDEX2: return "SME_PNn3_INDEX2";
+          case AARCH64_OPND_SME_list_of_64bit_tiles: return "SME_list_of_64bit_tiles";
+          case AARCH64_OPND_SME_ZA_HV_idx_ldstr: return "SME_ZA_HV_idx_ldstr";
+          case AARCH64_OPND_SME_ZA_array_off1x4: return "SME_ZA_array_off1x4";
+          case AARCH64_OPND_SME_ZA_array_off2x2: return "SME_ZA_array_off2x2";
+          case AARCH64_OPND_SME_ZA_array_off2x4: return "SME_ZA_array_off2x4";
+          case AARCH64_OPND_SME_ZA_array_off3_0: return "SME_ZA_array_off3_0";
+          case AARCH64_OPND_SME_ZA_array_off3_5: return "SME_ZA_array_off3_5";
+          case AARCH64_OPND_SME_ZA_array_off3x2: return "SME_ZA_array_off3x2";
+          case AARCH64_OPND_SME_ZA_array_off4: return "SME_ZA_array_off4";
+          case AARCH64_OPND_SME_ADDR_RI_U4xVL: return "SME_ADDR_RI_U4xVL";
+          case AARCH64_OPND_SME_SM_ZA: return "SME_SM_ZA";
+          case AARCH64_OPND_SME_PnT_Wm_imm: return "SME_PnT_Wm_imm";
+          case AARCH64_OPND_SME_SHRIMM4: return "SME_SHRIMM4";
+          case AARCH64_OPND_SME_SHRIMM5: return "SME_SHRIMM5";
+          case AARCH64_OPND_SME_Zm_INDEX1: return "SME_Zm_INDEX1";
+          case AARCH64_OPND_SME_Zm_INDEX2: return "SME_Zm_INDEX2";
+          case AARCH64_OPND_SME_Zm_INDEX3_1: return "SME_Zm_INDEX3_1";
+          case AARCH64_OPND_SME_Zm_INDEX3_2: return "SME_Zm_INDEX3_2";
+          case AARCH64_OPND_SME_Zm_INDEX3_10: return "SME_Zm_INDEX3_10";
+          case AARCH64_OPND_SME_Zm_INDEX4_1: return "SME_Zm_INDEX4_1";
+          case AARCH64_OPND_SME_Zm_INDEX4_10: return "SME_Zm_INDEX4_10";
+          case AARCH64_OPND_SME_Zn_INDEX1_16: return "SME_Zn_INDEX1_16";
+          case AARCH64_OPND_SME_Zn_INDEX2_15: return "SME_Zn_INDEX2_15";
+          case AARCH64_OPND_SME_Zn_INDEX2_16: return "SME_Zn_INDEX2_16";
+          case AARCH64_OPND_SME_Zn_INDEX3_14: return "SME_Zn_INDEX3_14";
+          case AARCH64_OPND_SME_Zn_INDEX3_15: return "SME_Zn_INDEX3_15";
+          case AARCH64_OPND_SME_Zn_INDEX4_14: return "SME_Zn_INDEX4_14";
+          case AARCH64_OPND_SME_VLxN_10: return "SME_VLxN_10";
+          case AARCH64_OPND_SME_VLxN_13: return "SME_VLxN_13";
+          case AARCH64_OPND_SME_ZT0: return "SME_ZT0";
+          case AARCH64_OPND_SME_ZT0_INDEX: return "SME_ZT0_INDEX";
+          case AARCH64_OPND_SME_ZT0_LIST: return "SME_ZT0_LIST";
+          case AARCH64_OPND_TME_UIMM16: return "TME_UIMM16";
+          case AARCH64_OPND_SM3_IMM2: return "SM3_IMM2";
+          case AARCH64_OPND_MOPS_ADDR_Rd: return "MOPS_ADDR_Rd";
+          case AARCH64_OPND_MOPS_ADDR_Rs: return "MOPS_ADDR_Rs";
+          case AARCH64_OPND_MOPS_WB_Rn: return "MOPS_WB_Rn";
+          case AARCH64_OPND_CSSC_SIMM8: return "CSSC_SIMM8";
+          case AARCH64_OPND_CSSC_UIMM8: return "CSSC_UIMM8";
+        default: throw std::runtime_error("unknown operand");
+    }
+}
+
 int main() {
     puts("[\n");
 
@@ -346,7 +631,7 @@ int main() {
             break;
 
         const auto iclass = static_cast<aarch64_insn_class>(x.iclass);
-        const auto subclass = static_cast<aarch64_op>(x.op);
+        const auto specifics = static_cast<aarch64_op>(x.op);
 
         printf("{\n");
 
@@ -354,8 +639,30 @@ int main() {
         printf("\t\"opcode\": \"0x%08x\",\n", x.opcode);
         printf("\t\"mask\": \"0x%08x\",\n", x.mask);
         printf("\t\"class\": \"%s\",\n", iclass_name(iclass));
-        printf("\t\"subclass\": \"%s\",\n", enumerator_name(subclass));
+        printf("\t\"specifics\": \"%s\",\n", specifics_name(specifics));
         printf("\t\"description\": \"%s\",\n", iclass_description(iclass));
+
+        std::vector<std::string> operands;
+
+        for (const auto o : x.operands) {
+            if (!o)
+                break;
+
+            const auto name = std::string(operand_name(o));
+            operands.push_back(name);
+        }
+
+        std::string operand_list;
+        for (auto o = 0; o < operands.size(); ++o) {
+            operand_list += "\"";
+            operand_list += operands[o];
+            operand_list += "\"";
+
+            if (operands.size() - o != 1) {
+                operand_list += ",";
+            }
+        }
+        printf("\t\"operands\": [%s],\n", operand_list.c_str());
 
         if (len - i != 2)
             printf("\t\"index\": %d },\n", i);
