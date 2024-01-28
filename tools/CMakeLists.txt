@@ -5,6 +5,8 @@ set(TARGET
 set(INC
         ../include/opcode/aarch64.h
         ../opcodes/aarch64-tbl.h
+        ../opcodes/aarch64-opc.h
+        ../opcodes/aarch64-dis.h
         ../include/bfd.h
         ../include/dis-asm.h
         ../include/config.h
@@ -15,6 +17,7 @@ set(INC
 set(SRC
         aarch64-insn-dump.cpp
         ../opcodes/aarch64-opc-2.c
+        ../opcodes/aarch64-dis-2.c
 )
 
 add_executable(${TARGET}

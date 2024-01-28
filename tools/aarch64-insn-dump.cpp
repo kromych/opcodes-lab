@@ -1,10 +1,14 @@
 #define VERIFIER(x) NULL
 
+extern "C" {
+
+#include "aarch64-dis.h"
 #include "aarch64-insn-bits.h"
 #include "aarch64-opc.h"
 #include "aarch64-tbl.h"
 #include "bfd.h"
 #include "dis-asm.h"
+}
 
 #include <cstdio>
 #include <stdexcept>
@@ -1746,6 +1750,17 @@ int main() {
         printf("{\n");
 
         printf("\t\"mnemonic\": \"%s\",\n", x.name);
+
+        {
+            std::vector<std::string> aliases;
+            for (auto a = aarch64_find_next_alias_opcode(&x); a;
+                 a = aarch64_find_next_alias_opcode(a))
+                aliases.emplace_back(std::to_string(a - aarch64_opcode_table));
+
+            printf("\t\"aliases\": %s,\n",
+                   to_str_array(aliases, false).c_str());
+        }
+
         printf("\t\"opcode\": \"0x%08x\",\n", x.opcode);
         printf("\t\"mask\": \"0x%08x\",\n", x.mask);
         printf("\t\"class\": \"%s\",\n", iclass_name(iclass));
