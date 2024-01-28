@@ -713,6 +713,215 @@ std::string flags_str(uint64_t flags) {
     return to_str_array(sflags);
 }
 
+const char* field_name(aarch64_field_kind f) {
+    switch (f) {
+        case FLD_NIL: return "NONE";
+        case FLD_CRm: return "CRm";
+        case FLD_CRm_dsb_nxs: return "CRm_dsb_nxs";
+        case FLD_CRn: return "CRn";
+        case FLD_CSSC_imm8: return "CSSC_imm8";
+        case FLD_H: return "H";
+        case FLD_L: return "L";
+        case FLD_M: return "M";
+        case FLD_N: return "N";
+        case FLD_Q: return "Q";
+        case FLD_Ra: return "Ra";
+        case FLD_Rd: return "Rd";
+        case FLD_Rm: return "Rm";
+        case FLD_Rn: return "Rn";
+        case FLD_Rs: return "Rs";
+        case FLD_Rt: return "Rt";
+        case FLD_Rt2: return "Rt2";
+        case FLD_S: return "S";
+        case FLD_SM3_imm2: return "SM3_imm2";
+        case FLD_SME_Pdx2: return "SME_Pdx2";
+        case FLD_SME_Pm: return "SME_Pm";
+        case FLD_SME_PNd3: return "SME_PNd3";
+        case FLD_SME_PNn3: return "SME_PNn3";
+        case FLD_SME_Q: return "SME_Q";
+        case FLD_SME_Rm: return "SME_Rm";
+        case FLD_SME_Rv: return "SME_Rv";
+        case FLD_SME_V: return "SME_V";
+        case FLD_SME_VL_10: return "SME_VL_10";
+        case FLD_SME_VL_13: return "SME_VL_13";
+        case FLD_SME_ZAda_2b: return "SME_ZAda_2b";
+        case FLD_SME_ZAda_3b: return "SME_ZAda_3b";
+        case FLD_SME_Zdn2: return "SME_Zdn2";
+        case FLD_SME_Zdn4: return "SME_Zdn4";
+        case FLD_SME_Zm: return "SME_Zm";
+        case FLD_SME_Zm2: return "SME_Zm2";
+        case FLD_SME_Zm4: return "SME_Zm4";
+        case FLD_SME_Zn2: return "SME_Zn2";
+        case FLD_SME_Zn4: return "SME_Zn4";
+        case FLD_SME_ZtT: return "SME_ZtT";
+        case FLD_SME_Zt3: return "SME_Zt3";
+        case FLD_SME_Zt2: return "SME_Zt2";
+        case FLD_SME_i1: return "SME_i1";
+        case FLD_SME_size_12: return "SME_size_12";
+        case FLD_SME_size_22: return "SME_size_22";
+        case FLD_SME_sz_23: return "SME_sz_23";
+        case FLD_SME_tszh: return "SME_tszh";
+        case FLD_SME_tszl: return "SME_tszl";
+        case FLD_SME_zero_mask: return "SME_zero_mask";
+        case FLD_SVE_M_4: return "SVE_M_4";
+        case FLD_SVE_M_14: return "SVE_M_14";
+        case FLD_SVE_M_16: return "SVE_M_16";
+        case FLD_SVE_N: return "SVE_N";
+        case FLD_SVE_Pd: return "SVE_Pd";
+        case FLD_SVE_Pg3: return "SVE_Pg3";
+        case FLD_SVE_Pg4_5: return "SVE_Pg4_5";
+        case FLD_SVE_Pg4_10: return "SVE_Pg4_10";
+        case FLD_SVE_Pg4_16: return "SVE_Pg4_16";
+        case FLD_SVE_Pm: return "SVE_Pm";
+        case FLD_SVE_Pn: return "SVE_Pn";
+        case FLD_SVE_Pt: return "SVE_Pt";
+        case FLD_SVE_Rm: return "SVE_Rm";
+        case FLD_SVE_Rn: return "SVE_Rn";
+        case FLD_SVE_Vd: return "SVE_Vd";
+        case FLD_SVE_Vm: return "SVE_Vm";
+        case FLD_SVE_Vn: return "SVE_Vn";
+        case FLD_SVE_Za_5: return "SVE_Za_5";
+        case FLD_SVE_Za_16: return "SVE_Za_16";
+        case FLD_SVE_Zd: return "SVE_Zd";
+        case FLD_SVE_Zm_5: return "SVE_Zm_5";
+        case FLD_SVE_Zm_16: return "SVE_Zm_16";
+        case FLD_SVE_Zn: return "SVE_Zn";
+        case FLD_SVE_Zt: return "SVE_Zt";
+        case FLD_SVE_i1: return "SVE_i1";
+        case FLD_SVE_i2h: return "SVE_i2h";
+        case FLD_SVE_i3h: return "SVE_i3h";
+        case FLD_SVE_i3h2: return "SVE_i3h2";
+        case FLD_SVE_i3l: return "SVE_i3l";
+        case FLD_SVE_imm3: return "SVE_imm3";
+        case FLD_SVE_imm4: return "SVE_imm4";
+        case FLD_SVE_imm5: return "SVE_imm5";
+        case FLD_SVE_imm5b: return "SVE_imm5b";
+        case FLD_SVE_imm6: return "SVE_imm6";
+        case FLD_SVE_imm7: return "SVE_imm7";
+        case FLD_SVE_imm8: return "SVE_imm8";
+        case FLD_SVE_imm9: return "SVE_imm9";
+        case FLD_SVE_immr: return "SVE_immr";
+        case FLD_SVE_imms: return "SVE_imms";
+        case FLD_SVE_msz: return "SVE_msz";
+        case FLD_SVE_pattern: return "SVE_pattern";
+        case FLD_SVE_prfop: return "SVE_prfop";
+        case FLD_SVE_rot1: return "SVE_rot1";
+        case FLD_SVE_rot2: return "SVE_rot2";
+        case FLD_SVE_rot3: return "SVE_rot3";
+        case FLD_SVE_size: return "SVE_size";
+        case FLD_SVE_sz: return "SVE_sz";
+        case FLD_SVE_sz2: return "SVE_sz2";
+        case FLD_SVE_tsz: return "SVE_tsz";
+        case FLD_SVE_tszh: return "SVE_tszh";
+        case FLD_SVE_tszl_8: return "SVE_tszl_8";
+        case FLD_SVE_tszl_19: return "SVE_tszl_19";
+        case FLD_SVE_xs_14: return "SVE_xs_14";
+        case FLD_SVE_xs_22: return "SVE_xs_22";
+        case FLD_S_imm10: return "S_imm10";
+        case FLD_abc: return "abc";
+        case FLD_asisdlso_opcode: return "asisdlso_opcode";
+        case FLD_b40: return "b40";
+        case FLD_b5: return "b5";
+        case FLD_cmode: return "cmode";
+        case FLD_cond: return "cond";
+        case FLD_cond2: return "cond2";
+        case FLD_defgh: return "defgh";
+        case FLD_hw: return "hw";
+        case FLD_imm1_0: return "imm1_0";
+        case FLD_imm1_2: return "imm1_2";
+        case FLD_imm1_8: return "imm1_8";
+        case FLD_imm1_10: return "imm1_10";
+        case FLD_imm1_15: return "imm1_15";
+        case FLD_imm1_16: return "imm1_16";
+        case FLD_imm2_0: return "imm2_0";
+        case FLD_imm2_1: return "imm2_1";
+        case FLD_imm2_8: return "imm2_8";
+        case FLD_imm2_10: return "imm2_10";
+        case FLD_imm2_12: return "imm2_12";
+        case FLD_imm2_15: return "imm2_15";
+        case FLD_imm2_16: return "imm2_16";
+        case FLD_imm2_19: return "imm2_19";
+        case FLD_imm3_0: return "imm3_0";
+        case FLD_imm3_5: return "imm3_5";
+        case FLD_imm3_10: return "imm3_10";
+        case FLD_imm3_12: return "imm3_12";
+        case FLD_imm3_14: return "imm3_14";
+        case FLD_imm3_15: return "imm3_15";
+        case FLD_imm4_0: return "imm4_0";
+        case FLD_imm4_5: return "imm4_5";
+        case FLD_imm4_10: return "imm4_10";
+        case FLD_imm4_11: return "imm4_11";
+        case FLD_imm4_14: return "imm4_14";
+        case FLD_imm5: return "imm5";
+        case FLD_imm6_10: return "imm6_10";
+        case FLD_imm6_15: return "imm6_15";
+        case FLD_imm7: return "imm7";
+        case FLD_imm8: return "imm8";
+        case FLD_imm9: return "imm9";
+        case FLD_imm12: return "imm12";
+        case FLD_imm14: return "imm14";
+        case FLD_imm16_0: return "imm16_0";
+        case FLD_imm16_5: return "imm16_5";
+        case FLD_imm19: return "imm19";
+        case FLD_imm26: return "imm26";
+        case FLD_immb: return "immb";
+        case FLD_immh: return "immh";
+        case FLD_immhi: return "immhi";
+        case FLD_immlo: return "immlo";
+        case FLD_immr: return "immr";
+        case FLD_imms: return "imms";
+        case FLD_index: return "index";
+        case FLD_index2: return "index2";
+        case FLD_ldst_size: return "ldst_size";
+        case FLD_len: return "len";
+        case FLD_lse_sz: return "lse_sz";
+        case FLD_nzcv: return "nzcv";
+        case FLD_op: return "op";
+        case FLD_op0: return "op0";
+        case FLD_op1: return "op1";
+        case FLD_op2: return "op2";
+        case FLD_opc: return "opc";
+        case FLD_opc1: return "opc1";
+        case FLD_opcode: return "opcode";
+        case FLD_option: return "option";
+        case FLD_rotate1: return "rotate1";
+        case FLD_rotate2: return "rotate2";
+        case FLD_rotate3: return "rotate3";
+        case FLD_scale: return "scale";
+        case FLD_sf: return "sf";
+        case FLD_shift: return "shift";
+        case FLD_size: return "size";
+        case FLD_sz: return "sz";
+        case FLD_type: return "type";
+        case FLD_vldst_size: return "vldst_size";
+
+        default: throw std::runtime_error("unknown field kind");
+    }
+}
+
+const char* operand_class_name(aarch64_operand_class c) {
+    switch (c) {
+         case AARCH64_OPND_CLASS_NIL: return "NIL";
+         case AARCH64_OPND_CLASS_INT_REG: return "INT_REG";
+         case AARCH64_OPND_CLASS_MODIFIED_REG: return "MODIFIED_REG";
+         case AARCH64_OPND_CLASS_FP_REG: return "FP_REG";
+         case AARCH64_OPND_CLASS_SIMD_REG: return "SIMD_REG";
+         case AARCH64_OPND_CLASS_SIMD_ELEMENT: return "SIMD_ELEMENT";
+         case AARCH64_OPND_CLASS_SISD_REG: return "SISD_REG";
+         case AARCH64_OPND_CLASS_SIMD_REGLIST: return "SIMD_REGLIST";
+         case AARCH64_OPND_CLASS_SVE_REG: return "SVE_REG";
+         case AARCH64_OPND_CLASS_SVE_REGLIST: return "SVE_REGLIST";
+         case AARCH64_OPND_CLASS_PRED_REG: return "PRED_REG";
+         case AARCH64_OPND_CLASS_ZA_ACCESS: return "ZA_ACCESS";
+         case AARCH64_OPND_CLASS_ADDRESS: return "ADDRESS";
+         case AARCH64_OPND_CLASS_IMMEDIATE: return "IMMEDIATE";
+         case AARCH64_OPND_CLASS_SYSTEM: return "SYSTEM";
+         case AARCH64_OPND_CLASS_COND: return "COND";
+         
+        default: throw std::runtime_error("unknown operand class");
+    }
+}
+
 int main() {
     puts("[\n");
 
@@ -744,7 +953,6 @@ int main() {
                 operands.push_back(name);
 
                 operand_info.push_back(aarch64_operands[o]);
-                // todo: for aarch64_operand iterate over bitfields in fields[]
             }
         }
 
@@ -779,8 +987,18 @@ int main() {
             }
 
             printf("\t\t\"%s\": {\n", o.c_str());
+            printf("\t\t\t\"class\": \"%s\",\n", operand_class_name(operand_info[oi].op_class));
+            printf("\t\t\t\"qualifiers\": %s,\n", to_str_array(oquals).c_str());
 
-            printf("\t\t\t\"qualifiers\": %s", to_str_array(oquals).c_str());
+            const auto& op_info = operand_info[oi];
+            std::vector<std::string> field_info;
+            for (const auto& f : op_info.fields) {
+                if (!f)
+                    break;
+
+                field_info.emplace_back(field_name(f));
+            }
+            printf("\t\t\t\"fields\": %s", to_str_array(field_info).c_str());
 
             printf("\n\t\t}");
             if (oi + 1 < operands.size()) {
