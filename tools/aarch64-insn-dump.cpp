@@ -175,7 +175,7 @@ const char* iclass_description(const aarch64_insn_class c) {
         case dp_1src: return "Data-processing (1 source)";
         case dp_2src: return "Data-processing (2 source)";
         case dp_3src: return "Data-processing (3 source)";
-        case exception: return "Excep'n generation";
+        case exception: return "Exception generation";
         case extract: return "Extract";
         case float2fix: return "Floating-point<->fixed-point conversions";
         case float2int: return "Floating-point<->integer conversions";
@@ -346,24 +346,24 @@ int main() {
             break;
 
         const auto iclass = static_cast<aarch64_insn_class>(x.iclass);
-        const auto enumerator = static_cast<aarch64_op>(x.op);
+        const auto subclass = static_cast<aarch64_op>(x.op);
 
-        printf("'%s': {\n", x.name);
+        printf("{\n");
 
-        printf("\t'mnemonic': '%s',\n", x.name);
-        printf("\t'opcode': 0x%08x,\n", x.opcode);
-        printf("\t'mask': 0x%08x,\n", x.mask);
-        printf("\t'class': '%s',\n", iclass_name(iclass));
-        printf("\t'enumerator': '%s',\n", enumerator_name(enumerator));
-        printf("\t'description': '%s'\n", iclass_description(iclass));
+        printf("\t\"mnemonic\": \"%s\",\n", x.name);
+        printf("\t\"opcode\": \"0x%08x\",\n", x.opcode);
+        printf("\t\"mask\": \"0x%08x\",\n", x.mask);
+        printf("\t\"class\": \"%s\",\n", iclass_name(iclass));
+        printf("\t\"subclass\": \"%s\",\n", enumerator_name(subclass));
+        printf("\t\"description\": \"%s\",\n", iclass_description(iclass));
 
         if (len - i != 2)
-            printf("\t'index': %d },\n", i);
+            printf("\t\"index\": %d },\n", i);
         else
-            printf("\t'index': %d }\n", i);
+            printf("\t\"index\": %d }\n", i);
     }
 
-    puts("]");
+    puts("\n]");
 
     return 0;
 }
