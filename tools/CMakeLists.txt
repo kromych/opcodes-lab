@@ -9,6 +9,7 @@ set(INC
         ../include/dis-asm.h
         ../include/config.h
         ../include/ansidecl.h
+        ../include/aarch64-insn-bits.h
 )
 
 set(SRC

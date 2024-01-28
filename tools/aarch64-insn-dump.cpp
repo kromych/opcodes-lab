@@ -4,6 +4,7 @@
 #include "dis-asm.h"
 #include "aarch64-opc.h"
 #include "aarch64-tbl.h"
+#include "aarch64-insn-bits.h"
 
 #include <cstdio>
 #include <stdexcept>
@@ -743,6 +744,7 @@ int main() {
                 operands.push_back(name);
 
                 operand_info.push_back(aarch64_operands[o]);
+                // todo: for aarch64_operand iterate over bitfields in fields[]
             }
         }
 
