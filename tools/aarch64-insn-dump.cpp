@@ -700,27 +700,21 @@ int main() {
         printf("\t\"specifics\": \"%s\",\n", specifics_name(specifics));
         printf("\t\"description\": \"%s\",\n", iclass_description(iclass));
 
-        auto operand_count = 0;
+        std::vector<std::string> operands;
         {
-            std::vector<std::string> operands;
-
             for (const auto o : x.operands) {
                 if (!o)
                     break;
 
                 const auto name = std::string(operand_name(o));
                 operands.push_back(name);
-                operand_count += 1;
             }
-
-            printf("\t\"operands\": %s,\n", to_str_array(operands).c_str());
         }
 
+        std::vector<std::vector<std::string>> quals;
         {
-            std::vector<std::string> quals;
-
             for (const auto& ql : x.qualifiers_list) {
-                if (quals.size() + 1 >= operand_count)
+                if (quals.size() + 1 >= operands.size())
                     break;
 
                 std::vector<std::string> qs;
@@ -730,11 +724,31 @@ int main() {
                     
                     qs.emplace_back(qual_name(static_cast<aarch64_opnd_qualifier>(q)));
                 }
-                quals.push_back(to_str_array(qs));
+                quals.push_back(qs);
+            }
+        }
+
+        printf("\t\"operands\": {\n");
+
+        for (auto oi = 0; oi < operands.size(); ++oi) {
+            const auto& o = operands[oi];
+            std::vector<std::string> oquals;
+
+            for (const auto& q : quals) {
+                if (oi >= q.size())
+                    break;
+
+                oquals.push_back(q[oi]);
             }
 
-            printf("\t\"operand_quals\": %s,\n", to_str_array(quals, false).c_str());
+            printf("\t\t\"%s\": %s", o.c_str(), to_str_array(oquals).c_str());
+            if (oi + 1 < operands.size()) {
+                printf(",");
+            }
+            printf("\n");
         }
+
+        printf("\t},\n");
 
         if (len - i != 2)
             printf("\t\"index\": %d },\n", i);
