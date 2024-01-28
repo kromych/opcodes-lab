@@ -2,6 +2,7 @@
 
 #include "bfd.h"
 #include "dis-asm.h"
+#include "aarch64-opc.h"
 #include "aarch64-tbl.h"
 
 #include <cstdio>
@@ -678,10 +679,43 @@ std::string to_str_array(const std::vector<std::string>& list, bool quote = true
     return joined;
 }
 
+std::string flags_str(uint64_t flags) {
+    std::vector<std::string> sflags;
+
+    if (flags & F_ALIAS) sflags.emplace_back("IS_ALIAS");
+    if (flags & F_HAS_ALIAS) sflags.emplace_back("HAS_ALIAS");
+    if (flags & F_COND) sflags.emplace_back("IS_COND");
+    if (flags & F_SF) sflags.emplace_back("HAS_SF_FIELD");
+    if (flags & F_SIZEQ) sflags.emplace_back("HAS_SIZEQ_FIELD");
+    if (flags & F_FPTYPE) sflags.emplace_back("HAS_FPTYPE_FIELD");
+    if (flags & F_SSIZE) sflags.emplace_back("HAS_ADVSIMD_SCALAR_SIZE");
+    if (flags & F_T) sflags.emplace_back("HAS_ADVSIMV_VEC_IN_Q");
+    if (flags & F_GPRSIZE_IN_Q) sflags.emplace_back("HAS_ADVSIMV_GPRSIZE_IN_Q");
+    if (flags & F_LDS_SIZE) sflags.emplace_back("HAS_LDS_SIZE_IN_BIT_22");
+    if (flags & F_MISC) sflags.emplace_back("HAS_SPEC_DECODE_RULES");
+    if (flags & F_N) sflags.emplace_back("HAS_N_FIELD");
+
+    if (flags & F_OD(0)) sflags.emplace_back("HAS_OPCODE_DEPENDENT_FIELD_0");
+    if (flags & F_OD(1)) sflags.emplace_back("HAS_OPCODE_DEPENDENT_FIELD_1");
+    if (flags & F_OD(2)) sflags.emplace_back("HAS_OPCODE_DEPENDENT_FIELD_2");
+    if (flags & F_OD(3)) sflags.emplace_back("HAS_OPCODE_DEPENDENT_FIELD_3");
+    if (flags & F_OD(4)) sflags.emplace_back("HAS_OPCODE_DEPENDENT_FIELD_4");
+    if (flags & F_OD(5)) sflags.emplace_back("HAS_OPCODE_DEPENDENT_FIELD_5");
+    if (flags & F_OD(6)) sflags.emplace_back("HAS_OPCODE_DEPENDENT_FIELD_6");
+    if (flags & F_OD(7)) sflags.emplace_back("HAS_OPCODE_DEPENDENT_FIELD_7");
+
+    if (flags & F_LSE_SZ) sflags.emplace_back("HAS_LSE_SZ_FIELD");
+    if (flags & F_SYS_READ) sflags.emplace_back("IS_SYS_READ");
+    if (flags & F_SYS_WRITE) sflags.emplace_back("IS_SYS_WRITE");
+    if (flags & F_SCAN) sflags.emplace_back("RESTRICTED_NEXT_INSN_SET");
+
+    return to_str_array(sflags);
+}
+
 int main() {
     puts("[\n");
 
-    constexpr auto len = sizeof(aarch64_opcode_table)/sizeof(aarch64_opcode_table[0]);
+    constexpr auto len = std::size(aarch64_opcode_table);
     for (auto i = 0; i < len; ++i) {
         const auto& x = aarch64_opcode_table[i];
 
@@ -689,7 +723,6 @@ int main() {
             break;
 
         const auto iclass = static_cast<aarch64_insn_class>(x.iclass);
-        const auto specifics = static_cast<aarch64_op>(x.op);
 
         printf("{\n");
 
@@ -697,10 +730,10 @@ int main() {
         printf("\t\"opcode\": \"0x%08x\",\n", x.opcode);
         printf("\t\"mask\": \"0x%08x\",\n", x.mask);
         printf("\t\"class\": \"%s\",\n", iclass_name(iclass));
-        printf("\t\"specifics\": \"%s\",\n", specifics_name(specifics));
         printf("\t\"description\": \"%s\",\n", iclass_description(iclass));
 
         std::vector<std::string> operands;
+        std::vector<aarch64_operand> operand_info;
         {
             for (const auto o : x.operands) {
                 if (!o)
@@ -708,6 +741,8 @@ int main() {
 
                 const auto name = std::string(operand_name(o));
                 operands.push_back(name);
+
+                operand_info.push_back(aarch64_operands[o]);
             }
         }
 
@@ -741,7 +776,11 @@ int main() {
                 oquals.push_back(q[oi]);
             }
 
-            printf("\t\t\"%s\": %s", o.c_str(), to_str_array(oquals).c_str());
+            printf("\t\t\"%s\": {\n", o.c_str());
+
+            printf("\t\t\t\"qualifiers\": %s", to_str_array(oquals).c_str());
+
+            printf("\n\t\t}");
             if (oi + 1 < operands.size()) {
                 printf(",");
             }
@@ -749,6 +788,8 @@ int main() {
         }
 
         printf("\t},\n");
+
+        printf("\t\"flags\": %s,\n", flags_str(x.flags).c_str());
 
         if (len - i != 2)
             printf("\t\"index\": %d },\n", i);

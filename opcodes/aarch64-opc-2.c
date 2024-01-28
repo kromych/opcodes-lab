@@ -19,6 +19,7 @@
    see <http://www.gnu.org/licenses/>.  */
 
 #include "sysdep.h"
+#include "bfd.h"
 #include "aarch64-opc.h"
 
 

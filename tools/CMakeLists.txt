@@ -7,10 +7,13 @@ set(INC
         ../opcodes/aarch64-tbl.h
         ../include/bfd.h
         ../include/dis-asm.h
+        ../include/config.h
+        ../include/ansidecl.h
 )
 
 set(SRC
         aarch64-insn-dump.cpp
+        ../opcodes/aarch64-opc-2.c
 )
 
 add_executable(${TARGET}

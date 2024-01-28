@@ -600,17 +600,17 @@ get_logsz (unsigned int size)
 {
   const unsigned char ls[16] =
     {0, 1,
-    static_cast<unsigned char>(-1), 2,
-    static_cast<unsigned char>(-1),
-    static_cast<unsigned char>(-1),
-    static_cast<unsigned char>(-1), 3,
-    static_cast<unsigned char>(-1),
-    static_cast<unsigned char>(-1),
-    static_cast<unsigned char>(-1),
-    static_cast<unsigned char>(-1),
-    static_cast<unsigned char>(-1),
-    static_cast<unsigned char>(-1),
-    static_cast<unsigned char>(-1), 4};
+    255, 2,
+    255,
+    255,
+    255, 3,
+    255,
+    255,
+    255,
+    255,
+    255,
+    255,
+    255, 4};
   if (size > 16)
     {
       assert (0);
