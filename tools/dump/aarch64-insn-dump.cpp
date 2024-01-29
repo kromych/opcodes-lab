@@ -2,12 +2,13 @@
 
 extern "C" {
 
+#include "bfd.h"
+#include "dis-asm.h"
+
 #include "aarch64-dis.h"
 #include "aarch64-insn-bits.h"
 #include "aarch64-opc.h"
 #include "aarch64-tbl.h"
-#include "bfd.h"
-#include "dis-asm.h"
 }
 
 #include <cstdio>

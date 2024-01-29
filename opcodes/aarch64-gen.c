@@ -24,7 +24,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "libiberty.h"
+#include "bfd.h"
+#include "dis-asm.h"
+
 #include "getopt.h"
 #include "opcode/aarch64.h"
 
@@ -1192,14 +1194,12 @@ usage (FILE * stream, int status)
 int
 main (int argc, char **argv)
 {
-  extern int chdir (char *);
   int c;
   int gen_opcode_p = 0;
   int gen_assembler_p = 0;
   int gen_disassembler_p = 0;
 
   program_name = *argv;
-  xmalloc_set_program_name (program_name);
 
   while ((c = getopt_long (argc, argv, "vVdhacs", long_options, 0)) != EOF)
     switch (c)
