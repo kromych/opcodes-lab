@@ -1739,6 +1739,8 @@ const char *operand_class_name(aarch64_operand_class c) {
 int main() {
     puts("[\n");
 
+    constexpr auto bc_opcode = 0x54000000;
+    auto bc_index = 0;
     constexpr auto len = std::size(aarch64_opcode_table);
     for (auto i = 0; i < len; ++i) {
         const auto &x = aarch64_opcode_table[i];
@@ -1757,6 +1759,12 @@ int main() {
             for (auto a = aarch64_find_next_alias_opcode(&x); a;
                  a = aarch64_find_next_alias_opcode(a))
                 aliases.emplace_back(std::to_string(a - aarch64_opcode_table));
+
+            // Special handling for the branch pseudo-instructions
+            if (x.opcode == bc_opcode && x.mask == 0xff000010)
+                bc_index = i;
+            else if ((x.opcode & 0xfffffff0) == bc_opcode)
+                aliases.emplace_back(std::to_string(bc_index));
 
             printf("\t\"aliases\": %s,\n",
                    to_str_array(aliases, false).c_str());
@@ -1831,6 +1839,8 @@ int main() {
 
                 field_info.emplace_back(field_spec);
             }
+            if (x.flags & F_COND)
+                field_info.emplace_back("cond:0:4");
             printf("\t\t\t\"bit_fields\": %s",
                    to_str_array(field_info).c_str());
 
