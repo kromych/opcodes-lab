@@ -1674,6 +1674,141 @@ const char *operand_class_name(aarch64_operand_class c) {
     }
 }
 
+const char *feature_set_name(const aarch64_feature_set *f) {
+    if (f == &aarch64_feature_v8)
+        return "V8";
+    else if (f == &aarch64_feature_fp)
+        return "FP";
+    else if (f == &aarch64_feature_simd)
+        return "SIMD";
+    else if (f == &aarch64_feature_crc)
+        return "CRC";
+    else if (f == &aarch64_feature_lse)
+        return "LSE";
+    else if (f == &aarch64_feature_lse128)
+        return "LSE128";
+    else if (f == &aarch64_feature_lor)
+        return "LOR";
+    else if (f == &aarch64_feature_rdma)
+        return "RDMA";
+    else if (f == &aarch64_feature_fp_f16)
+        return "FP_F16";
+    else if (f == &aarch64_feature_simd_f16)
+        return "SIMD_F16";
+    else if (f == &aarch64_feature_sve)
+        return "SVE";
+    else if (f == &aarch64_feature_pac)
+        return "PAC";
+    else if (f == &aarch64_feature_compnum)
+        return "COMPNUM";
+    else if (f == &aarch64_feature_jscvt)
+        return "JSCVT";
+    else if (f == &aarch64_feature_rcpc)
+        return "RCPC";
+    else if (f == &aarch64_feature_rcpc2)
+        return "RCPC2";
+    else if (f == &aarch64_feature_sha2)
+        return "SHA2";
+    else if (f == &aarch64_feature_aes)
+        return "AES";
+    else if (f == &aarch64_feature_sha3)
+        return "SHA3";
+    else if (f == &aarch64_feature_sm4)
+        return "SM4";
+    else if (f == &aarch64_feature_fp_16_v8_2a)
+        return "FP_16_V8_2A";
+    else if (f == &aarch64_feature_dotprod)
+        return "DOTPROD";
+    else if (f == &aarch64_feature_flagmanip)
+        return "FLAGMANIP";
+    else if (f == &aarch64_feature_frintts)
+        return "FRINTTS";
+    else if (f == &aarch64_feature_sb)
+        return "SB";
+    else if (f == &aarch64_feature_predres)
+        return "PREDRES";
+    else if (f == &aarch64_feature_predres2)
+        return "PREDRES2";
+    else if (f == &aarch64_feature_memtag)
+        return "MEMTAG";
+    else if (f == &aarch64_feature_tme)
+        return "TME";
+    else if (f == &aarch64_feature_sve2)
+        return "SVE2";
+    else if (f == &aarch64_feature_sve2aes)
+        return "SVE2AES";
+    else if (f == &aarch64_feature_sve2sha3)
+        return "SVE2SHA3";
+    else if (f == &aarch64_feature_sve2sm4)
+        return "SVE2SM4";
+    else if (f == &aarch64_feature_sve2bitperm)
+        return "SVE2BITPERM";
+    else if (f == &aarch64_feature_sme)
+        return "SME";
+    else if (f == &aarch64_feature_sme_f64f64)
+        return "SME_F64F64";
+    else if (f == &aarch64_feature_sme_i16i64)
+        return "SME_I16I64";
+    else if (f == &aarch64_feature_sme2)
+        return "SME2";
+    else if (f == &aarch64_feature_sme2_i16i64)
+        return "SME2_I16I64";
+    else if (f == &aarch64_feature_sme2_f64f64)
+        return "SME2_F64F64";
+    else if (f == &aarch64_feature_bfloat16_sve)
+        return "BFLOAT16_SVE";
+    else if (f == &aarch64_feature_bfloat16)
+        return "BFLOAT16";
+    else if (f == &aarch64_feature_i8mm_sve)
+        return "I8MM_SVE";
+    else if (f == &aarch64_feature_f32mm_sve)
+        return "F32MM_SVE";
+    else if (f == &aarch64_feature_f64mm_sve)
+        return "F64MM_SVE";
+    else if (f == &aarch64_feature_i8mm)
+        return "I8MM";
+    else if (f == &aarch64_feature_v8r)
+        return "V8R";
+    else if (f == &aarch64_feature_ls64)
+        return "LS64";
+    else if (f == &aarch64_feature_flagm)
+        return "FLAGM";
+    else if (f == &aarch64_feature_xs)
+        return "XS";
+    else if (f == &aarch64_feature_wfxt)
+        return "WFXT";
+    else if (f == &aarch64_feature_mops)
+        return "MOPS";
+    else if (f == &aarch64_feature_mops_memtag)
+        return "MOPS_MEMTAG";
+    else if (f == &aarch64_feature_hbc)
+        return "HBC";
+    else if (f == &aarch64_feature_cssc)
+        return "CSSC";
+    else if (f == &aarch64_feature_chk)
+        return "CHK";
+    else if (f == &aarch64_feature_gcs)
+        return "GCS";
+    else if (f == &aarch64_feature_ite)
+        return "ITE";
+    else if (f == &aarch64_feature_d128)
+        return "D128";
+    else if (f == &aarch64_feature_the)
+        return "THE";
+    else if (f == &aarch64_feature_d128_the)
+        return "D128_THE";
+    else if (f == &aarch64_feature_b16b16)
+        return "B16B16";
+    else if (f == &aarch64_feature_sme2p1)
+        return "SME2P1";
+    else if (f == &aarch64_feature_sve2p1)
+        return "SVE2P1";
+    else if (f == &aarch64_feature_rcpc3)
+        return "RCPC3";
+    else
+        throw std::runtime_error("unknown features set");
+}
+
 int main() {
     puts("[\n");
 
@@ -1711,6 +1846,7 @@ int main() {
         printf("\t\"opcode\": \"0x%08x\",\n", x.opcode);
         printf("\t\"mask\": \"0x%08x\",\n", x.mask);
         printf("\t\"class\": \"%s\",\n", iclass_name(iclass));
+        printf("\t\"feature_set\": \"%s\",\n", feature_set_name(x.avariant));
         printf("\t\"description\": \"%s\",\n", iclass_description(iclass));
 
         std::vector<std::string> operands;
