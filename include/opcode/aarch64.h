@@ -893,7 +893,7 @@ enum aarch64_opnd_qualifier
 
 /* Instruction class.  */
 
-enum aarch64_insn_class
+enum aarch64_insn_class : uint32_t
 {
   aarch64_misc,
   addsub_carry,
@@ -1018,7 +1018,7 @@ enum aarch64_insn_class
 
 /* Opcode enumerators.  */
 
-enum aarch64_op
+enum aarch64_op : uint32_t
 {
   OP_NIL,
   OP_STRB_POS,
@@ -1178,10 +1178,10 @@ struct aarch64_opcode
   aarch64_insn mask;
 
   /* Instruction class.  */
-  enum aarch64_insn_class iclass;
+  /* enum aarch64_insn_class */ uint32_t iclass;
 
   /* Enumerator identifier.  */
-  enum aarch64_op op;
+  /* enum aarch64_op */ uint32_t op;
 
   /* Which architecture variant provides this instruction.  */
   const aarch64_feature_set *avariant;

@@ -4,6 +4,9 @@ extern "C" {
 
 #include "bfd.h"
 #include "dis-asm.h"
+}
+
+extern "C" {
 
 #include "aarch64-dis.h"
 #include "aarch64-insn-bits.h"
@@ -154,6 +157,8 @@ const char *iclass_name(enum aarch64_insn_class c) {
         return "LOG_SHIFT";
     case lse_atomic:
         return "LSE_ATOMIC";
+    case lse128_atomic:
+        return "LSE128_ATOMIC";
     case movewide:
         return "MOVEWIDE";
     case pcreladdr:
@@ -192,6 +197,8 @@ const char *iclass_name(enum aarch64_insn_class c) {
         return "SME_STOP";
     case sme2_mov:
         return "SME2_MOV";
+    case sme2_movaz:
+        return "SME2_MOVAZ";
     case sve_cpy:
         return "SVE_CPY";
     case sve_index:
@@ -242,9 +249,19 @@ const char *iclass_name(enum aarch64_insn_class c) {
         return "BFLOAT16";
     case cssc:
         return "CSSC";
+    case gcs:
+        return "GCS";
+    case the:
+        return "THE";
+    case sve2_urqvs:
+        return "SVE2_URQVS";
+    case sve_index1:
+        return "SVE_INDEX1";
+    case rcpc3:
+        return "RCPC3";
 
     default:
-        throw std::runtime_error("unknown error class");
+        throw std::runtime_error("unknown instruction class");
     }
 }
 
@@ -394,6 +411,8 @@ const char *iclass_description(const aarch64_insn_class c) {
         return "Logical (shifted register)";
     case lse_atomic:
         return "LSE extension (atomic)";
+    case lse128_atomic:
+        return "LSE extension (atomic) 128-bit";
     case movewide:
         return "Move wide (immediate)";
     case pcreladdr:
@@ -402,6 +421,7 @@ const char *iclass_description(const aarch64_insn_class c) {
     case sme_int_sd:
     case sme_misc:
     case sme_mov:
+    case sme2_movaz:
     case sme_ldr:
     case sme_psel:
     case sme_shift:
@@ -434,184 +454,20 @@ const char *iclass_description(const aarch64_insn_class c) {
     case sve_shift_tsz_hsd:
     case sve_shift_tsz_bhsd:
     case sve_size_tsz_bhs:
+    case sve2_urqvs:
+    case sve_index1:
         return "SVE instructions";
+    case rcpc3:
+        return "RCPC3 instructions";
+    case gcs:
+        return "GCS instructions";
+    case the:
+        return "THE instructions";
     case testbranch:
         return "Test & branch (immediate)";
 
     default:
-        throw std::runtime_error("no description");
-    }
-}
-
-const char *specifics_name(const aarch64_op op) {
-    switch (op) {
-    case OP_NIL:
-        return "NONE";
-    case OP_STRB_POS:
-        return "STRB_POS";
-    case OP_LDRB_POS:
-        return "LDRB_POS";
-    case OP_LDRSB_POS:
-        return "LDRSB_POS";
-    case OP_STRH_POS:
-        return "STRH_POS";
-    case OP_LDRH_POS:
-        return "LDRH_POS";
-    case OP_LDRSH_POS:
-        return "LDRSH_POS";
-    case OP_STR_POS:
-        return "STR_POS";
-    case OP_LDR_POS:
-        return "LDR_POS";
-    case OP_STRF_POS:
-        return "STRF_POS";
-    case OP_LDRF_POS:
-        return "LDRF_POS";
-    case OP_LDRSW_POS:
-        return "LDRSW_POS";
-    case OP_PRFM_POS:
-        return "PRFM_POS";
-    case OP_STURB:
-        return "STURB";
-    case OP_LDURB:
-        return "LDURB";
-    case OP_LDURSB:
-        return "LDURSB";
-    case OP_STURH:
-        return "STURH";
-    case OP_LDURH:
-        return "LDURH";
-    case OP_LDURSH:
-        return "LDURSH";
-    case OP_STUR:
-        return "STUR";
-    case OP_LDUR:
-        return "LDUR";
-    case OP_STURV:
-        return "STURV";
-    case OP_LDURV:
-        return "LDURV";
-    case OP_LDURSW:
-        return "LDURSW";
-    case OP_PRFUM:
-        return "PRFUM";
-    case OP_LDR_LIT:
-        return "LDR_LIT";
-    case OP_LDRV_LIT:
-        return "LDRV_LIT";
-    case OP_LDRSW_LIT:
-        return "LDRSW_LIT";
-    case OP_PRFM_LIT:
-        return "PRFM_LIT";
-    case OP_ADD:
-        return "ADD";
-    case OP_B:
-        return "B";
-    case OP_BL:
-        return "BL";
-    case OP_MOVN:
-        return "MOVN";
-    case OP_MOVZ:
-        return "MOVZ";
-    case OP_MOVK:
-        return "MOVK";
-    case OP_MOV_IMM_LOG:
-        return "MOV_IMM_LOG";
-    case OP_MOV_IMM_WIDE:
-        return "MOV_IMM_WIDE";
-    case OP_MOV_IMM_WIDEN:
-        return "MOV_IMM_WIDEN";
-    case OP_MOV_V:
-        return "MOV_V";
-    case OP_ASR_IMM:
-        return "ASR_IMM";
-    case OP_LSR_IMM:
-        return "LSR_IMM";
-    case OP_LSL_IMM:
-        return "LSL_IMM";
-    case OP_BIC:
-        return "BIC";
-    case OP_UBFX:
-        return "UBFX";
-    case OP_BFXIL:
-        return "BFXIL";
-    case OP_SBFX:
-        return "SBFX";
-    case OP_SBFIZ:
-        return "SBFIZ";
-    case OP_BFI:
-        return "BFI";
-    case OP_BFC:
-        return "BFC";
-    case OP_UBFIZ:
-        return "UBFIZ";
-    case OP_UXTB:
-        return "UXTB";
-    case OP_UXTH:
-        return "UXTH";
-    case OP_UXTW:
-        return "UXTW";
-    case OP_CINC:
-        return "CINC";
-    case OP_CINV:
-        return "CINV";
-    case OP_CNEG:
-        return "CNEG";
-    case OP_CSET:
-        return "CSET";
-    case OP_CSETM:
-        return "CSETM";
-    case OP_FCVT:
-        return "FCVT";
-    case OP_FCVTN:
-        return "FCVTN";
-    case OP_FCVTN2:
-        return "FCVTN2";
-    case OP_FCVTL:
-        return "FCVTL";
-    case OP_FCVTL2:
-        return "FCVTL2";
-    case OP_FCVTXN_S:
-        return "FCVTXN_S";
-    case OP_ROR_IMM:
-        return "ROR_IMM";
-    case OP_SXTL:
-        return "SXTL";
-    case OP_SXTL2:
-        return "SXTL2";
-    case OP_UXTL:
-        return "UXTL";
-    case OP_UXTL2:
-        return "UXTL2";
-    case OP_MOV_P_P:
-        return "MOV_P_P";
-    case OP_MOV_PN_PN:
-        return "MOV_PN_PN";
-    case OP_MOV_Z_P_Z:
-        return "MOV_Z_P_Z";
-    case OP_MOV_Z_V:
-        return "MOV_Z_V";
-    case OP_MOV_Z_Z:
-        return "MOV_Z_Z";
-    case OP_MOV_Z_Zi:
-        return "MOV_Z_Zi";
-    case OP_MOVM_P_P_P:
-        return "MOVM_P_P_P";
-    case OP_MOVS_P_P:
-        return "MOVS_P_P";
-    case OP_MOVZS_P_P_P:
-        return "MOVZS_P_P_P";
-    case OP_MOVZ_P_P_P:
-        return "MOVZ_P_P_P";
-    case OP_NOTS_P_P_P_Z:
-        return "NOTS_P_P_P_Z";
-    case OP_NOT_P_P_P_Z:
-        return "NOT_P_P_P_Z";
-    case OP_FCMLA_ELEM:
-        return "FCMLA_ELEM";
-
-    default:
-        throw std::runtime_error("unknown enumerator");
+        throw std::runtime_error("no known description");
     }
 }
 
@@ -629,6 +485,8 @@ const char *operand_name(const aarch64_opnd o) {
         return "Rt";
     case AARCH64_OPND_Rt2:
         return "Rt2";
+    case AARCH64_OPND_X16:
+        return "X16";
     case AARCH64_OPND_Rt_LS64:
         return "Rt_LS64";
     case AARCH64_OPND_Rt_SP:
@@ -647,6 +505,8 @@ const char *operand_name(const aarch64_opnd o) {
         return "Rm_SP";
     case AARCH64_OPND_PAIRREG:
         return "PAIRREG";
+    case AARCH64_OPND_PAIRREG_OR_XZR:
+        return "PAIRREG_OR_XZR";
     case AARCH64_OPND_Rm_EXT:
         return "Rm_EXT";
     case AARCH64_OPND_Rm_SFT:
@@ -795,6 +655,8 @@ const char *operand_name(const aarch64_opnd o) {
         return "ADDR_SIMM7";
     case AARCH64_OPND_ADDR_SIMM9:
         return "ADDR_SIMM9";
+    case AARCH64_OPND_ADDR_SIMM9_2:
+        return "ADDR_SIMM9_2";
     case AARCH64_OPND_ADDR_SIMM10:
         return "ADDR_SIMM10";
     case AARCH64_OPND_ADDR_SIMM11:
@@ -811,6 +673,8 @@ const char *operand_name(const aarch64_opnd o) {
         return "SIMD_ADDR_POST";
     case AARCH64_OPND_SYSREG:
         return "SYSREG";
+    case AARCH64_OPND_SYSREG128:
+        return "SYSREG128";
     case AARCH64_OPND_PSTATEFIELD:
         return "PSTATEFIELD";
     case AARCH64_OPND_SYSREG_AT:
@@ -821,6 +685,8 @@ const char *operand_name(const aarch64_opnd o) {
         return "SYSREG_IC";
     case AARCH64_OPND_SYSREG_TLBI:
         return "SYSREG_TLBI";
+    case AARCH64_OPND_SYSREG_TLBIP:
+        return "SYSREG_TLBIP";
     case AARCH64_OPND_SYSREG_SR:
         return "SYSREG_SR";
     case AARCH64_OPND_BARRIER:
@@ -835,8 +701,14 @@ const char *operand_name(const aarch64_opnd o) {
         return "RPRFMOP";
     case AARCH64_OPND_BARRIER_PSB:
         return "BARRIER_PSB";
+    case AARCH64_OPND_BARRIER_GCSB:
+        return "BARRIER_GCSB";
     case AARCH64_OPND_BTI_TARGET:
         return "BTI_TARGET";
+    case AARCH64_OPND_LSE128_Rt:
+        return "LSE128_Rt";
+    case AARCH64_OPND_LSE128_Rt2:
+        return "LSE128_Rt2";
     case AARCH64_OPND_SVE_ADDR_RI_S4x16:
         return "SVE_ADDR_RI_S4x16";
     case AARCH64_OPND_SVE_ADDR_RI_S4x32:
@@ -1015,6 +887,22 @@ const char *operand_name(const aarch64_opnd o) {
         return "SVE_Vm";
     case AARCH64_OPND_SVE_Vn:
         return "SVE_Vn";
+    case AARCH64_OPND_SME_ZA_array_vrsb_1:
+        return "SME_ZA_array_vrsb_1";
+    case AARCH64_OPND_SME_ZA_array_vrsh_1:
+        return "SME_ZA_array_vrsh_1";
+    case AARCH64_OPND_SME_ZA_array_vrss_1:
+        return "SME_ZA_array_vrss_1";
+    case AARCH64_OPND_SME_ZA_array_vrsd_1:
+        return "SME_ZA_array_vrsd_1";
+    case AARCH64_OPND_SME_ZA_array_vrsb_2:
+        return "SME_ZA_array_vrsb_2";
+    case AARCH64_OPND_SME_ZA_array_vrsh_2:
+        return "SME_ZA_array_vrsh_2";
+    case AARCH64_OPND_SME_ZA_array_vrss_2:
+        return "SME_ZA_array_vrss_2";
+    case AARCH64_OPND_SME_ZA_array_vrsd_2:
+        return "SME_ZA_array_vrsd_2";
     case AARCH64_OPND_SVE_Za_5:
         return "SVE_Za_5";
     case AARCH64_OPND_SVE_Za_16:
@@ -1035,10 +923,14 @@ const char *operand_name(const aarch64_opnd o) {
         return "SVE_Zm3_22_INDEX";
     case AARCH64_OPND_SVE_Zm4_11_INDEX:
         return "SVE_Zm4_11_INDEX";
+    case AARCH64_OPND_SVE_Zm_imm4:
+        return "SVE_Zm_imm4";
     case AARCH64_OPND_SVE_Zm4_INDEX:
         return "SVE_Zm4_INDEX";
     case AARCH64_OPND_SVE_Zn:
         return "SVE_Zn";
+    case AARCH64_OPND_SVE_Zn_5_INDEX:
+        return "SVE_Zn_5_INDEX";
     case AARCH64_OPND_SVE_Zn_INDEX:
         return "SVE_Zn_INDEX";
     case AARCH64_OPND_SVE_ZnxN:
@@ -1171,6 +1063,23 @@ const char *operand_name(const aarch64_opnd o) {
         return "CSSC_SIMM8";
     case AARCH64_OPND_CSSC_UIMM8:
         return "CSSC_UIMM8";
+    case AARCH64_OPND_SME_Zt2:
+        return "SME_Zt2";
+    case AARCH64_OPND_SME_Zt3:
+        return "SME_Zt3";
+    case AARCH64_OPND_SME_Zt4:
+        return "SME_Zt4";
+    case AARCH64_OPND_RCPC3_ADDR_OPT_POSTIND:
+        return "RCPC3_ADDR_OPT_POSTIND";
+    case AARCH64_OPND_RCPC3_ADDR_OPT_PREIND_WB:
+        return "RCPC3_ADDR_OPT_PREIND_WB";
+    case AARCH64_OPND_RCPC3_ADDR_POSTIND:
+        return "RCPC3_ADDR_POSTIND";
+    case AARCH64_OPND_RCPC3_ADDR_PREIND_WB:
+        return "RCPC3_ADDR_PREIND_WB";
+    case AARCH64_OPND_RCPC3_ADDR_OFFSET:
+        return "RCPC3_ADDR_OFFSET";
+
     default:
         throw std::runtime_error("unknown operand");
     }
@@ -1327,6 +1236,13 @@ std::string flags_str(uint64_t flags) {
     if (flags & F_SCAN)
         sflags.emplace_back("RESTRICTED_NEXT_INSN_SET");
 
+    if (flags & F_OPD_NARROW)
+        sflags.emplace_back("HAS_NARROW");
+    if (flags & F_OPD_SIZE)
+        sflags.emplace_back("HAS_SIZE");
+    if (flags & F_RCPC3_SIZE)
+        sflags.emplace_back("HAS_RCPC3_SIZE");
+
     return to_str_array(sflags);
 }
 
@@ -1346,6 +1262,10 @@ const char *field_name(aarch64_field_kind f) {
         return "H";
     case FLD_L:
         return "L";
+    case FLD_LSE128_Rt:
+        return "LSE128_Rt";
+    case FLD_LSE128_Rt2:
+        return "LSE128_Rt2";
     case FLD_M:
         return "M";
     case FLD_N:
@@ -1690,6 +1610,24 @@ const char *field_name(aarch64_field_kind f) {
         return "type";
     case FLD_vldst_size:
         return "vldst_size";
+    case FLD_off3:
+        return "off3";
+    case FLD_off2:
+        return "off2";
+    case FLD_ZAn_1:
+        return "ZAn_1";
+    case FLD_ol:
+        return "ol";
+    case FLD_ZAn_2:
+        return "ZAn_2";
+    case FLD_ZAn_3:
+        return "ZAn_3";
+    case FLD_ZAn:
+        return "ZAn";
+    case FLD_opc2:
+        return "opc2";
+    case FLD_rcpc3_size:
+        return "rcpc3_size";
 
     default:
         throw std::runtime_error("unknown field kind");
@@ -1699,7 +1637,7 @@ const char *field_name(aarch64_field_kind f) {
 const char *operand_class_name(aarch64_operand_class c) {
     switch (c) {
     case AARCH64_OPND_CLASS_NIL:
-        return "NIL";
+        return "NONE";
     case AARCH64_OPND_CLASS_INT_REG:
         return "INT_REG";
     case AARCH64_OPND_CLASS_MODIFIED_REG:
