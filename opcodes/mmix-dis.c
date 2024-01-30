@@ -1,5 +1,5 @@
 /* mmix-dis.c -- Disassemble MMIX instructions.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Written by Hans-Peter Nilsson (hp@bitrange.com)
 
    This file is part of the GNU opcodes library.
@@ -94,7 +94,7 @@ initialize_mmix_dis_info (struct disassemble_info *info)
 
       if (reg_section != NULL)
 	{
-	  /* The returned symcount *does* opcode the ending NULL.  */
+	  /* The returned symcount *does* include the ending NULL.  */
 	  long symsize = bfd_get_symtab_upper_bound (abfd);
 	  asymbol **syms = malloc (symsize);
 	  long nsyms;

@@ -1,5 +1,5 @@
 /* aarch64-opc.h -- Header file for aarch64-opc.c and aarch64-opc-2.c.
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of the GNU opcodes library.
@@ -36,6 +36,8 @@ enum aarch64_field_kind
   FLD_CSSC_imm8,
   FLD_H,
   FLD_L,
+  FLD_LSE128_Rt,
+  FLD_LSE128_Rt2,
   FLD_M,
   FLD_N,
   FLD_Q,
@@ -208,6 +210,15 @@ enum aarch64_field_kind
   FLD_sz,
   FLD_type,
   FLD_vldst_size,
+  FLD_off3,
+  FLD_off2,
+  FLD_ZAn_1,
+  FLD_ol,
+  FLD_ZAn_2,
+  FLD_ZAn_3,
+  FLD_ZAn,
+  FLD_opc2,
+  FLD_rcpc3_size,
 };
 
 /* Field description.  */
@@ -291,6 +302,13 @@ verify_constraints (const struct aarch64_inst *, const aarch64_insn, bfd_vma,
 
 #undef F_REG_IN_CRM
 #define F_REG_IN_CRM	(1 << 5)  /* Register extra encoding in CRm.  */
+
+#undef F_REG_ALIAS
+#define F_REG_ALIAS	(1 << 6)  /* Register name aliases another.  */
+
+#undef F_REG_128
+#define F_REG_128	(1 << 7) /* System regsister implementable as 128-bit wide.  */
+
 
 /* PSTATE field name for the MSR instruction this is encoded in "op1:op2:CRm".
    Part of CRm can be used to encode <pstatefield>. E.g. CRm[3:1] for SME.
@@ -599,18 +617,7 @@ static inline unsigned int
 get_logsz (unsigned int size)
 {
   const unsigned char ls[16] =
-    {0, 1,
-    255, 2,
-    255,
-    255,
-    255, 3,
-    255,
-    255,
-    255,
-    255,
-    255,
-    255,
-    255, 4};
+    {0, 1, -1, 2, -1, -1, -1, 3, -1, -1, -1, -1, -1, -1, -1, 4};
   if (size > 16)
     {
       assert (0);

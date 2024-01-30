@@ -1,5 +1,5 @@
 /* Instruction printing code for the ARM
-   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+   Copyright (C) 1994-2024 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rwe@pegasus.esprit.ec.org)
    Modification by James G. Smith (jsmith@cygnus.co.uk)
 
@@ -8076,7 +8076,7 @@ print_vec_condition (struct disassemble_info *info, long given,
 #define NEGATIVE_BIT_SET  ((given & (1 << U_BIT)) == 0)
 #define PRE_BIT_SET	  (given & (1 << P_BIT))
 
-/* The assembler string for an instruction can opcode %{X:...%} patterns,
+/* The assembler string for an instruction can include %{X:...%} patterns,
    where the 'X' is one of the characters understood by this function.
 
    This function takes the X character, and returns a new style.  This new
@@ -9324,7 +9324,7 @@ print_insn_neon (struct disassemble_info *info, long given, bool thumb)
           if ((cond_mask & 0xf0000000) == 0) {
               /* For the entries in neon_opcodes, an opcode mask/value with
                  the high 4 bits equal to 0 indicates a conditional
-                 instruction. For thumb however, we need to opcode those
+                 instruction. For thumb however, we need to include those
                  bits in the instruction matching.  */
               cond_mask |= 0xf0000000;
               /* Furthermore, the thumb encoding of a conditional instruction

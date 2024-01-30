@@ -1,5 +1,5 @@
 /* TI C6X opcode information.
-   Copyright (C) 2010-2023 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -580,7 +580,7 @@ typedef struct
   /* The name of the register.  */
   const char *name;
 
-  /* Which ISA variants opcode this control register.  */
+  /* Which ISA variants include this control register.  */
   unsigned short isa_variants;
 
   /* Whether it can be read, written or both (in supervisor mode).
@@ -624,7 +624,7 @@ typedef struct
   /* The pipeline type of this instruction.  */
   tic6x_pipeline_type type;
 
-  /* Which ISA variants opcode this instruction.  */
+  /* Which ISA variants include this instruction.  */
   unsigned short isa_variants;
 
   /* Flags for this instruction.  */

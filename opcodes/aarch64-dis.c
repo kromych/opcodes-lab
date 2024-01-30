@@ -1,5 +1,5 @@
 /* aarch64-dis.c -- AArch64 disassembler.
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of the GNU opcodes library.
@@ -302,8 +302,13 @@ aarch64_ext_regno_pair (const aarch64_operand *self ATTRIBUTE_UNUSED, aarch64_op
 		   aarch64_operand_error *errors ATTRIBUTE_UNUSED)
 {
   assert (info->idx == 1
-	  || info->idx ==3);
-  info->reg.regno = inst->operands[info->idx - 1].reg.regno + 1;
+	  || info->idx == 2
+	  || info->idx == 3
+	  || info->idx == 5);
+
+  unsigned prev_regno = inst->operands[info->idx - 1].reg.regno;
+  info->reg.regno = (prev_regno == 0x1f) ? 0x1f
+					 : prev_regno + 1;
   return true;
 }
 
@@ -1027,6 +1032,70 @@ aarch64_ext_addr_simple (const aarch64_operand *self ATTRIBUTE_UNUSED,
   return true;
 }
 
+/* Decode the address operand for rcpc3 instructions with optional load/store
+   datasize offset, e.g. STILPP <Xs>, <Xt>, [<Xn|SP>{,#-16}]! and
+   LIDAP <Xs>, <Xt>, [<Xn|SP>]{,#-16}.  */
+bool
+aarch64_ext_rcpc3_addr_opt_offset (const aarch64_operand *self ATTRIBUTE_UNUSED,
+				   aarch64_opnd_info *info,
+				   aarch64_insn code,
+				   const aarch64_inst *inst ATTRIBUTE_UNUSED,
+				   aarch64_operand_error *err ATTRIBUTE_UNUSED)
+{
+  info->addr.base_regno = extract_field (FLD_Rn, code, 0);
+  if (!extract_field (FLD_opc2, code, 0))
+    {
+      info->addr.writeback = 1;
+
+      enum aarch64_opnd type;
+      for (int i = 0; i < AARCH64_MAX_OPND_NUM; i++)
+	{
+	  aarch64_opnd_info opnd = info[i];
+	  type = opnd.type;
+	  if (aarch64_operands[type].op_class == AARCH64_OPND_CLASS_ADDRESS)
+	    break;
+	}
+
+      assert (aarch64_operands[type].op_class == AARCH64_OPND_CLASS_ADDRESS);
+      int offset = calc_ldst_datasize (inst->operands);
+
+      switch (type)
+	{
+	case AARCH64_OPND_RCPC3_ADDR_OPT_PREIND_WB:
+	case AARCH64_OPND_RCPC3_ADDR_PREIND_WB:
+	  info->addr.offset.imm = -offset;
+	  info->addr.preind = 1;
+	  break;
+	case AARCH64_OPND_RCPC3_ADDR_OPT_POSTIND:
+	case AARCH64_OPND_RCPC3_ADDR_POSTIND:
+	  info->addr.offset.imm = offset;
+	  info->addr.postind = 1;
+	  break;
+	default:
+	  return false;
+	}
+    }
+  return true;
+}
+
+bool
+aarch64_ext_rcpc3_addr_offset (const aarch64_operand *self ATTRIBUTE_UNUSED,
+			       aarch64_opnd_info *info,
+			       aarch64_insn code,
+			       const aarch64_inst *inst ATTRIBUTE_UNUSED,
+			       aarch64_operand_error *errors ATTRIBUTE_UNUSED)
+{
+  info->qualifier = get_expected_qualifier (inst, info->idx);
+
+  /* Rn */
+  info->addr.base_regno = extract_field (self->fields[0], code, 0);
+
+  /* simm9 */
+  aarch64_insn imm = extract_fields (code, 0, 1, self->fields[1]);
+  info->addr.offset.imm = sign_extend (imm, 8);
+  return true;
+}
+
 /* Decode the address operand for e.g.
      stlur <Xt>, [<Xn|SP>{, <amount>}].  */
 bool
@@ -1297,6 +1366,7 @@ aarch64_ext_sysins_op (const aarch64_operand *self ATTRIBUTE_UNUSED,
     case AARCH64_OPND_SYSREG_DC: sysins_ops = aarch64_sys_regs_dc; break;
     case AARCH64_OPND_SYSREG_IC: sysins_ops = aarch64_sys_regs_ic; break;
     case AARCH64_OPND_SYSREG_TLBI: sysins_ops = aarch64_sys_regs_tlbi; break;
+    case AARCH64_OPND_SYSREG_TLBIP: sysins_ops = aarch64_sys_regs_tlbi; break;
     case AARCH64_OPND_SYSREG_SR:
 	sysins_ops = aarch64_sys_regs_sr;
 	 /* Let's remove op2 for rctx.  Refer to comments in the definition of
@@ -1924,6 +1994,84 @@ aarch64_ext_sme_za_array (const aarch64_operand *self,
   return true;
 }
 
+/* Decode two ZA tile slice (V, Rv, off3| ZAn ,off2 | ZAn, ol| ZAn) feilds.  */
+bool
+aarch64_ext_sme_za_vrs1 (const aarch64_operand *self,
+			  aarch64_opnd_info *info, aarch64_insn code,
+			  const aarch64_inst *inst,
+			  aarch64_operand_error *errors ATTRIBUTE_UNUSED)
+{
+  int v = extract_field (self->fields[0], code, 0);
+  int regno = 12 + extract_field (self->fields[1], code, 0);
+  int imm, za_reg, num_offset = 2;
+
+  switch (info->qualifier)
+    {
+    case AARCH64_OPND_QLF_S_B:
+      imm = extract_field (self->fields[2], code, 0);
+      info->indexed_za.index.imm = imm * num_offset;
+      break;
+    case AARCH64_OPND_QLF_S_H:
+    case AARCH64_OPND_QLF_S_S:
+      za_reg = extract_field (self->fields[2], code, 0);
+      imm = extract_field (self->fields[3], code, 0);
+      info->indexed_za.index.imm = imm * num_offset;
+      info->indexed_za.regno = za_reg;
+      break;
+    case AARCH64_OPND_QLF_S_D:
+      za_reg = extract_field (self->fields[2], code, 0);
+      info->indexed_za.regno = za_reg;
+      break;
+    default:
+      return false;
+    }
+
+  info->indexed_za.index.regno = regno;
+  info->indexed_za.index.countm1 = num_offset - 1;
+  info->indexed_za.v = v;
+  info->indexed_za.group_size = get_opcode_dependent_value (inst->opcode);
+  return true;
+}
+
+/* Decode four ZA tile slice (V, Rv, off3| ZAn ,off2 | ZAn, ol| ZAn) feilds.  */
+bool
+aarch64_ext_sme_za_vrs2 (const aarch64_operand *self,
+			  aarch64_opnd_info *info, aarch64_insn code,
+			  const aarch64_inst *inst,
+			  aarch64_operand_error *errors ATTRIBUTE_UNUSED)
+{
+  int v = extract_field (self->fields[0], code, 0);
+  int regno = 12 + extract_field (self->fields[1], code, 0);
+  int imm, za_reg, num_offset =4;
+
+  switch (info->qualifier)
+    {
+    case AARCH64_OPND_QLF_S_B:
+      imm = extract_field (self->fields[2], code, 0);
+      info->indexed_za.index.imm = imm * num_offset;
+      break;
+    case AARCH64_OPND_QLF_S_H:
+      za_reg = extract_field (self->fields[2], code, 0);
+      imm = extract_field (self->fields[3], code, 0);
+      info->indexed_za.index.imm = imm * num_offset;
+      info->indexed_za.regno = za_reg;
+      break;
+    case AARCH64_OPND_QLF_S_S:
+    case AARCH64_OPND_QLF_S_D:
+      za_reg = extract_field (self->fields[2], code, 0);
+      info->indexed_za.regno = za_reg;
+      break;
+    default:
+      return false;
+    }
+
+  info->indexed_za.index.regno = regno;
+  info->indexed_za.index.countm1 = num_offset - 1;
+  info->indexed_za.v = v;
+  info->indexed_za.group_size = get_opcode_dependent_value (inst->opcode);
+  return true;
+}
+
 bool
 aarch64_ext_sme_addr_ri_u4xvl (const aarch64_operand *self,
                                aarch64_opnd_info *info, aarch64_insn code,
@@ -2014,6 +2162,26 @@ aarch64_ext_sve_index (const aarch64_operand *self,
   return true;
 }
 
+/* Decode Zn.<T>[<imm>], where <imm> is an immediate with range of 0 to one less
+   than the number of elements in 128 bit, which can encode il:tsz.  */
+bool
+aarch64_ext_sve_index_imm (const aarch64_operand *self,
+			   aarch64_opnd_info *info, aarch64_insn code,
+			   const aarch64_inst *inst ATTRIBUTE_UNUSED,
+			   aarch64_operand_error *errors ATTRIBUTE_UNUSED)
+{
+  int val;
+
+  info->reglane.regno = extract_field (self->fields[0], code, 0);
+  val = extract_fields (code, 0, 2, self->fields[2], self->fields[1]);
+  if ((val & 15) == 0)
+    return 0;
+  while ((val & 1) == 0)
+    val /= 2;
+  info->reglane.index = val / 2;
+  return true;
+}
+
 /* Decode a logical immediate for the MOV alias of SVE DUPM.  */
 bool
 aarch64_ext_sve_limm_mov (const aarch64_operand *self,
@@ -2053,6 +2221,21 @@ aarch64_ext_sve_reglist (const aarch64_operand *self,
 {
   info->reglist.first_regno = extract_field (self->fields[0], code, 0);
   info->reglist.num_regs = get_opcode_dependent_value (inst->opcode);
+  info->reglist.stride = 1;
+  return true;
+}
+
+/* Decode {Zn.<T> , Zm.<T>}.  The fields array specifies which field
+   to use for Zn.  The opcode-dependent value specifies the number
+   of registers in the list.  */
+bool
+aarch64_ext_sve_reglist_zt (const aarch64_operand *self,
+			    aarch64_opnd_info *info, aarch64_insn code,
+			    const aarch64_inst *inst ATTRIBUTE_UNUSED,
+			    aarch64_operand_error *errors ATTRIBUTE_UNUSED)
+{
+  info->reglist.first_regno = extract_field (self->fields[0], code, 0);
+  info->reglist.num_regs = get_operand_specific_data (self);
   info->reglist.stride = 1;
   return true;
 }
@@ -2460,6 +2643,26 @@ do_special_decoding (aarch64_inst *inst)
       value = extract_field (FLD_lse_sz, inst->value, 0);
       inst->operands[idx].qualifier = get_greg_qualifier_from_value (value);
     }
+  /* rcpc3 'size' field.  */
+  if (inst->opcode->flags & F_RCPC3_SIZE)
+    {
+      value = extract_field (FLD_rcpc3_size, inst->value, 0);
+      for (int i = 0;
+	   aarch64_operands[inst->operands[i].type].op_class != AARCH64_OPND_CLASS_ADDRESS;
+	   i++)
+	{
+	  if (aarch64_operands[inst->operands[i].type].op_class
+	      == AARCH64_OPND_CLASS_INT_REG)
+	    inst->operands[i].qualifier = get_greg_qualifier_from_value (value & 1);
+	  else if (aarch64_operands[inst->operands[i].type].op_class
+	      == AARCH64_OPND_CLASS_FP_REG)
+	    {
+	      value += (extract_field (FLD_opc1, inst->value, 0) << 2);
+	      inst->operands[i].qualifier = get_sreg_qualifier_from_value (value);
+	    }
+	}
+    }
+
   /* size:Q fields.  */
   if (inst->opcode->flags & F_SIZEQ)
     return decode_sizeq (inst);
@@ -2524,6 +2727,16 @@ do_special_decoding (aarch64_inst *inst)
       Q = (unsigned) extract_field (FLD_Q, inst->value, inst->opcode->mask);
       inst->operands[0].qualifier =
 	get_vreg_qualifier_from_value ((num << 1) | Q);
+    }
+
+  if ((inst->opcode->flags & F_OPD_SIZE) && inst->opcode->iclass == sve2_urqvs)
+    {
+      unsigned size;
+      size = (unsigned) extract_field (FLD_size, inst->value,
+				       inst->opcode->mask);
+      inst->operands[0].qualifier
+	= get_vreg_qualifier_from_value (1 + (size << 1));
+      inst->operands[2].qualifier = get_sreg_qualifier_from_value (size);
     }
 
   if (inst->opcode->flags & F_GPRSIZE_IN_Q)
@@ -3008,7 +3221,7 @@ determine_disassembling_preference (struct aarch64_inst *inst,
 	  continue;
 	}
 
-      if (!AARCH64_CPU_HAS_FEATURE (arch_variant, *alias->avariant))
+      if (!AARCH64_CPU_HAS_ALL_FEATURES (arch_variant, *alias->avariant))
 	{
 	  DEBUG_TRACE ("skip %s: we're missing features", alias->name);
 	  continue;
@@ -3138,6 +3351,17 @@ aarch64_decode_variant_using_iclass (aarch64_inst *inst)
 	}
       break;
 
+    case sve_index1:
+      i = extract_fields (inst->value, 0, 2, FLD_SVE_tsz, FLD_SVE_i2h);
+      if ((i & 15) == 0)
+	return false;
+      while ((i & 1) == 0)
+	{
+	  i >>= 1;
+	  variant += 1;
+	}
+      break;
+
     case sve_limm:
       /* Pick the smallest applicable element size.  */
       if ((inst->value & 0x20600) == 0x600)
@@ -3155,6 +3379,7 @@ aarch64_decode_variant_using_iclass (aarch64_inst *inst)
       variant = 3;
       break;
 
+    case sme2_movaz:
     case sme_misc:
     case sve_misc:
       /* These instructions have only a single variant.  */
@@ -3461,8 +3686,9 @@ get_style_text (enum disassembler_style style)
 
       for (i = 0; i <= 0xf; ++i)
 	{
-	  int res = snprintf (&formats[i][0], sizeof (formats[i]), "%c%x%c",
-			      STYLE_MARKER_CHAR, i, STYLE_MARKER_CHAR);
+	  int res ATTRIBUTE_UNUSED
+	    = snprintf (&formats[i][0], sizeof (formats[i]), "%c%x%c",
+			STYLE_MARKER_CHAR, i, STYLE_MARKER_CHAR);
 	  assert (res == 3);
 	}
 
@@ -3569,7 +3795,7 @@ print_operands (bfd_vma pc, const aarch64_opcode *opcode,
 	(*info->print_address_func) (info->target, info);
       else
 	{
-	  /* This operand came from aarch64_print_operand, and will opcode
+	  /* This operand came from aarch64_print_operand, and will include
 	     embedded strings indicating which style each character should
 	     have.  In the following code we split the text based on
 	     CURR_STYLE, and call the styled print callback to print each
@@ -3846,6 +4072,12 @@ print_insn_aarch64_word (bfd_vma pc,
       break;
     case ERR_OK:
       user_friendly_fixup (&inst);
+      if (inst.opcode->iclass == condbranch
+	  || inst.opcode->iclass == testbranch
+	  || inst.opcode->iclass == compbranch)
+        info->insn_type = dis_condbranch;
+      else if (inst.opcode->iclass == branch_imm)
+        info->insn_type = dis_jsr;
       print_aarch64_insn (pc, &inst, word, info, errors);
       break;
     default:
@@ -3963,10 +4195,11 @@ select_aarch64_variant (unsigned mach)
   switch (mach)
     {
     case bfd_mach_aarch64_8R:
-      arch_variant = AARCH64_ARCH_V8_R;
+      AARCH64_SET_FEATURE (arch_variant, AARCH64_ARCH_V8R);
       break;
     default:
-      arch_variant = AARCH64_ANY & ~(AARCH64_FEATURE_V8_R);
+      arch_variant = (aarch64_feature_set) AARCH64_ALL_FEATURES;
+      AARCH64_CLEAR_FEATURE (arch_variant, arch_variant, V8R);
     }
 }
 

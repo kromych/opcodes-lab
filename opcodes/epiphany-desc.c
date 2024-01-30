@@ -3,7 +3,7 @@
 
 THIS FILE IS MACHINE GENERATED WITH CGEN.
 
-Copyright (C) 1996-2023 Free Software Foundation, Inc.
+Copyright (C) 1996-2024 Free Software Foundation, Inc.
 
 This file is part of the GNU Binutils and/or GDB, the GNU debugger.
 
@@ -2028,7 +2028,7 @@ build_operand_table (CGEN_CPU_TABLE *cd)
 /* Subroutine of epiphany_cgen_cpu_open to build the hardware table.
    ??? This could leave out insns not supported by the specified mach/isa,
    but that would cause errors like "foo only supported by bar" to become
-   "unknown insn", so for now we opcode all insns and require the app to
+   "unknown insn", so for now we include all insns and require the app to
    do the checking later.
    ??? On the other hand, parsing of such insns may require their hardware or
    operand elements to be in the table [which they mightn't be].  */

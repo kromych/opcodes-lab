@@ -1,5 +1,5 @@
 /* LoongArch opcode support.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
 
    This file is part of the GNU opcodes library.
@@ -82,8 +82,8 @@ set_default_loongarch_dis_options (void)
   LARCH_opts.ase_lvz = 1;
   LARCH_opts.ase_lbt = 1;
 
-  loongarch_r_disname = loongarch_r_lp64_name;
-  loongarch_f_disname = loongarch_f_lp64_name;
+  loongarch_r_disname = loongarch_r_alias;
+  loongarch_f_disname = loongarch_f_alias;
   loongarch_fc_disname = loongarch_fc_normal_name;
   loongarch_c_disname = loongarch_c_normal_name;
   loongarch_cr_disname = loongarch_cr_normal_name;
@@ -267,7 +267,12 @@ disassemble_one (insn_t insn, struct disassemble_info *info)
     }
 
   info->insn_type = dis_nonbranch;
-  info->fprintf_styled_func (info->stream, dis_style_mnemonic, "%-12s", opc->name);
+  if (opc->format == NULL || opc->format[0] == '\0')
+    info->fprintf_styled_func (info->stream, dis_style_mnemonic,
+				"%s", opc->name);
+  else
+    info->fprintf_styled_func (info->stream, dis_style_mnemonic,
+				"%-12s", opc->name);
 
   {
     char *fake_args = xmalloc (strlen (opc->format) + 1);

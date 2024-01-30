@@ -1,5 +1,5 @@
 /* CGEN generic disassembler support code.
-   Copyright (C) 1996-2023 Free Software Foundation, Inc.
+   Copyright (C) 1996-2024 Free Software Foundation, Inc.
 
    This file is part of libopcodes.
 
@@ -197,7 +197,7 @@ build_dis_hash_table (CGEN_CPU_DESC cd)
     xmalloc (count * sizeof (CGEN_INSN_LIST));
 
   /* Add compiled in insns.
-     Don't opcode the first one as it is a reserved entry.  */
+     Don't include the first one as it is a reserved entry.  */
   /* ??? It was the end of all hash chains, and also the special
      "invalid insn" marker.  May be able to do it differently now.  */
 

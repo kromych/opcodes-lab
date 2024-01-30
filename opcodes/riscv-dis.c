@@ -1,5 +1,5 @@
 /* RISC-V disassembler
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target.
@@ -69,8 +69,8 @@ static enum riscv_seg_mstate last_map_state = MAP_NONE;
 static asection *last_map_section = NULL;
 
 /* Register names as used by the disassembler.  */
-static const char * const *riscv_gpr_names;
-static const char * const *riscv_fpr_names;
+static const char (*riscv_gpr_names)[NRC];
+static const char (*riscv_fpr_names)[NRC];
 
 /* If set, disassemble as most general instruction.  */
 static bool no_aliases = false;
@@ -502,7 +502,7 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 
 	case 'y':
 	  print (info->stream, dis_style_immediate, "0x%x",
-		 (unsigned)EXTRACT_OPERAND (BS, l));
+		 EXTRACT_OPERAND (BS, l));
 	  break;
 
 	case 'z':
@@ -511,12 +511,12 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 
 	case '>':
 	  print (info->stream, dis_style_immediate, "0x%x",
-		 (unsigned)EXTRACT_OPERAND (SHAMT, l));
+		 EXTRACT_OPERAND (SHAMT, l));
 	  break;
 
 	case '<':
 	  print (info->stream, dis_style_immediate, "0x%x",
-		 (unsigned)EXTRACT_OPERAND (SHAMTW, l));
+		 EXTRACT_OPERAND (SHAMTW, l));
 	  break;
 
 	case 'S':
@@ -568,8 +568,18 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 	      }
 
 	    if (riscv_csr_hash[csr] != NULL)
-	      print (info->stream, dis_style_register, "%s",
-		     riscv_csr_hash[csr]);
+	      if (riscv_subset_supports (&riscv_rps_dis, "xtheadvector")
+		  && (csr == CSR_VSTART
+		      || csr == CSR_VXSAT
+		      || csr == CSR_VXRM
+		      || csr == CSR_VL
+		      || csr == CSR_VTYPE
+		      || csr == CSR_VLENB))
+		print (info->stream, dis_style_register, "%s",
+		       concat ("th.", riscv_csr_hash[csr], NULL));
+	      else
+		print (info->stream, dis_style_register, "%s",
+		       riscv_csr_hash[csr]);
 	    else
 	      print (info->stream, dis_style_immediate, "0x%x", csr);
 	    break;
@@ -577,90 +587,173 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 
 	case 'Y':
 	  print (info->stream, dis_style_immediate, "0x%x",
-		 (unsigned) EXTRACT_OPERAND (RNUM, l));
+		 EXTRACT_OPERAND (RNUM, l));
 	  break;
 
 	case 'Z':
 	  print (info->stream, dis_style_immediate, "%d", rs1);
 	  break;
 
-	case 'W': /* Various operands.  */
-	  {
-	    switch (*++oparg)
-	      {
-	      case 'i':
-		switch (*++oparg)
-		  {
-		  case 'f':
-		    print (info->stream, dis_style_address_offset, "%d",
-			   (int) EXTRACT_STYPE_IMM (l));
-		    break;
-		  default:
-		    goto undefined_modifier;
-		  }
-		  break;
-	      case 'f':
-		switch (*++oparg)
-		  {
-		  case 'v':
-		    if (riscv_fli_symval[rs1])
-		      print (info->stream, dis_style_text, "%s",
-			     riscv_fli_symval[rs1]);
-		    else
-		      print (info->stream, dis_style_immediate, "%a",
-			     riscv_fli_numval[rs1]);
-		    break;
-		  default:
-		    goto undefined_modifier;
-		  }
-		break;
-	      default:
-		goto undefined_modifier;
-	      }
-	  }
-	  break;
-
-	case 'X': /* Integer immediate.  */
-	  {
-	    size_t n;
-	    size_t s;
-	    bool sign;
-
-	    switch (*++oparg)
-	      {
-		case 'l': /* Literal.  */
-		  oparg++;
-		  while (*oparg && *oparg != ',')
-		    {
-		      print (info->stream, dis_style_immediate, "%c", *oparg);
-		      oparg++;
-		    }
-		  oparg--;
-		  break;
-		case 's': /* 'XsN@S' ... N-bit signed immediate at bit S.  */
-		  sign = true;
-		  goto print_imm;
-		case 'u': /* 'XuN@S' ... N-bit unsigned immediate at bit S.  */
-		  sign = false;
-		  goto print_imm;
-		print_imm:
-		  n = strtol (oparg + 1, (char **)&oparg, 10);
-		  if (*oparg != '@')
-		    goto undefined_modifier;
-		  s = strtol (oparg + 1, (char **)&oparg, 10);
-		  oparg--;
-
-		  if (!sign)
-		    print (info->stream, dis_style_immediate, "%lu",
-			   (unsigned long)EXTRACT_U_IMM (n, s, l));
-		  else
-		    print (info->stream, dis_style_immediate, "%li",
-			   (signed long)EXTRACT_S_IMM (n, s, l));
+	case 'W': /* Various operands for standard z extensions.  */
+	  switch (*++oparg)
+	    {
+	    case 'i':
+	      switch (*++oparg)
+		{
+		case 'f':
+		  print (info->stream, dis_style_address_offset, "%d",
+			 (int) EXTRACT_STYPE_IMM (l));
 		  break;
 		default:
 		  goto undefined_modifier;
+		}
+	      break;
+	    case 'f':
+	      switch (*++oparg)
+		{
+		case 'v':
+		  if (riscv_fli_symval[rs1])
+		    print (info->stream, dis_style_text, "%s",
+			   riscv_fli_symval[rs1]);
+		  else
+		    print (info->stream, dis_style_immediate, "%a",
+			   riscv_fli_numval[rs1]);
+		  break;
+		default:
+		  goto undefined_modifier;
+		}
+	      break;
+	    case 'c': /* Zcb extension 16 bits length instruction fields. */
+	      switch (*++oparg)
+		{
+		case 'b':
+		  print (info->stream, dis_style_immediate, "%d",
+			 (int)EXTRACT_ZCB_BYTE_UIMM (l));
+		  break;
+		case 'h':
+		  print (info->stream, dis_style_immediate, "%d",
+			 (int)EXTRACT_ZCB_HALFWORD_UIMM (l));
+		  break;
+		default:
+		  goto undefined_modifier;
+		}
+	      break;
+	    default:
+	      goto undefined_modifier;
+	    }
+	  break;
+
+	case 'X': /* Vendor-specific operands.  */
+	  switch (*++oparg)
+	    {
+	    case 't': /* Vendor-specific (T-head) operands.  */
+	      {
+		size_t n;
+		size_t s;
+		bool sign;
+		switch (*++oparg)
+		  {
+		  case 'V':
+		   ++oparg;
+		   if (*oparg != 'c')
+		      goto undefined_modifier;
+
+		    int imm = (*oparg == 'b') ? EXTRACT_RVV_VB_IMM (l)
+					      : EXTRACT_RVV_VC_IMM (l);
+		    unsigned int imm_vediv = EXTRACT_OPERAND (XTHEADVEDIV, imm);
+		    unsigned int imm_vlmul = EXTRACT_OPERAND (XTHEADVLMUL, imm);
+		    unsigned int imm_vsew = EXTRACT_OPERAND (XTHEADVSEW, imm);
+		    unsigned int imm_vtype_res
+		      = EXTRACT_OPERAND (XTHEADVTYPE_RES, imm);
+		    if (imm_vsew < ARRAY_SIZE (riscv_vsew)
+			&& imm_vlmul < ARRAY_SIZE (riscv_th_vlen)
+			&& imm_vediv < ARRAY_SIZE (riscv_th_vediv)
+			&& ! imm_vtype_res)
+		      print (info->stream, dis_style_text, "%s,%s,%s",
+			     riscv_vsew[imm_vsew], riscv_th_vlen[imm_vlmul],
+			     riscv_th_vediv[imm_vediv]);
+		    else
+		      print (info->stream, dis_style_immediate, "%d", imm);
+		    break;
+		  case 'l': /* Integer immediate, literal.  */
+		    oparg++;
+		    while (*oparg && *oparg != ',')
+		      {
+			print (info->stream, dis_style_immediate, "%c", *oparg);
+			oparg++;
+		      }
+		    oparg--;
+		    break;
+		  case 's': /* Integer immediate, 'XsN@S' ... N-bit signed immediate at bit S.  */
+		    sign = true;
+		    goto print_imm;
+		  case 'u': /* Integer immediate, 'XuN@S' ... N-bit unsigned immediate at bit S.  */
+		    sign = false;
+		    goto print_imm;
+		  print_imm:
+		    n = strtol (oparg + 1, (char **)&oparg, 10);
+		    if (*oparg != '@')
+		      goto undefined_modifier;
+		    s = strtol (oparg + 1, (char **)&oparg, 10);
+		    oparg--;
+
+		    if (!sign)
+		      print (info->stream, dis_style_immediate, "%lu",
+			     (unsigned long)EXTRACT_U_IMM (n, s, l));
+		    else
+		      print (info->stream, dis_style_immediate, "%li",
+			     (signed long)EXTRACT_S_IMM (n, s, l));
+		    break;
+		  default:
+		    goto undefined_modifier;
+		  }
 	      }
-	  }
+	      break;
+	    case 'c': /* Vendor-specific (CORE-V) operands.  */
+	      switch (*++oparg)
+		{
+		  case '2':
+		    print (info->stream, dis_style_immediate, "%d",
+			((int) EXTRACT_CV_IS2_UIMM5 (l)));
+		    break;
+		  case '3':
+		    print (info->stream, dis_style_immediate, "%d",
+			((int) EXTRACT_CV_IS3_UIMM5 (l)));
+		    break;
+		  default:
+		    goto undefined_modifier;
+		}
+	      break;
+	    case 's': /* Vendor-specific (SiFive) operands.  */
+	      switch (*++oparg)
+		{
+		/* SiFive vector coprocessor interface.  */
+		case 'd':
+		  print (info->stream, dis_style_register, "0x%x",
+			 (unsigned) EXTRACT_OPERAND (RD, l));
+		  break;
+		case 't':
+		  print (info->stream, dis_style_register, "0x%x",
+			 (unsigned) EXTRACT_OPERAND (RS2, l));
+		  break;
+		case 'O':
+		  switch (*++oparg)
+		    {
+		    case '2':
+		      print (info->stream, dis_style_register, "0x%x",
+			     (unsigned) EXTRACT_OPERAND (XSO2, l));
+		      break;
+		    case '1':
+		      print (info->stream, dis_style_register, "0x%x",
+			     (unsigned) EXTRACT_OPERAND (XSO1, l));
+		      break;
+		    }
+		  break;
+		}
+	      break;
+	    default:
+	      goto undefined_modifier;
+	    }
 	  break;
 
 	default:
@@ -743,6 +836,9 @@ riscv_disassemble_insn (bfd_vma memaddr,
 
       for (; op->name; op++)
 	{
+	  /* Ignore macro insns.  */
+	  if (op->pinfo == INSN_MACRO)
+	    continue;
 	  /* Does the opcode match?  */
 	  if (! (op->match_func) (op, word))
 	    continue;
@@ -826,20 +922,20 @@ riscv_disassemble_insn (bfd_vma memaddr,
   return insnlen;
 }
 
-/* Return true if we find the suitable mapping symbol,
-   and also update the STATE.  Otherwise, return false.  */
+/* If we find the suitable mapping symbol update the STATE.
+   Otherwise, do nothing.  */
 
-static bool
-riscv_get_map_state (int n,
-		     enum riscv_seg_mstate *state,
-		     struct disassemble_info *info)
+static void
+riscv_update_map_state (int n,
+			enum riscv_seg_mstate *state,
+			struct disassemble_info *info)
 {
   const char *name;
 
   /* If the symbol is in a different section, ignore it.  */
   if (info->section != NULL
       && info->section != info->symtab[n]->section)
-    return false;
+    return;
 
   name = bfd_asymbol_name(info->symtab[n]);
   if (strcmp (name, "$x") == 0)
@@ -850,12 +946,40 @@ riscv_get_map_state (int n,
     {
       *state = MAP_INSN;
       riscv_release_subset_list (&riscv_subsets);
-      riscv_parse_subset (&riscv_rps_dis, name + 2);
+
+      /* ISA mapping string may be numbered, suffixed with '.n'. Do not
+	 consider this as part of the ISA string.  */
+      char *suffix = strchr (name, '.');
+      if (suffix)
+	{
+	  int suffix_index = (int)(suffix - name);
+	  char *name_substr = xmalloc (suffix_index + 1);
+	  strncpy (name_substr, name, suffix_index);
+	  name_substr[suffix_index] = '\0';
+	  riscv_parse_subset (&riscv_rps_dis, name_substr + 2);
+	  free (name_substr);
+	}
+      else
+	riscv_parse_subset (&riscv_rps_dis, name + 2);
     }
-  else
+}
+
+/* Return true if we find the suitable mapping symbol.
+   Otherwise, return false.  */
+
+static bool
+riscv_is_valid_mapping_symbol (int n,
+			     struct disassemble_info *info)
+{
+  const char *name;
+
+  /* If the symbol is in a different section, ignore it.  */
+  if (info->section != NULL
+      && info->section != info->symtab[n]->section)
     return false;
 
-  return true;
+  name = bfd_asymbol_name(info->symtab[n]);
+  return riscv_elf_is_mapping_symbols (name);
 }
 
 /* Check the sorted symbol table (sorted by the symbol value), find the
@@ -914,7 +1038,7 @@ riscv_search_mapping_symbol (bfd_vma memaddr,
       /* We have searched all possible symbols in the range.  */
       if (addr > memaddr)
 	break;
-      if (riscv_get_map_state (n, &mstate, info))
+      if (riscv_is_valid_mapping_symbol (n, info))
 	{
 	  symbol = n;
 	  found = true;
@@ -925,7 +1049,7 @@ riscv_search_mapping_symbol (bfd_vma memaddr,
     }
 
   /* We can not find the suitable mapping symbol above.  Therefore, we
-     look forwards and try to find it again, but don't go pass the start
+     look forwards and try to find it again, but don't go past the start
      of the section.  Otherwise a data section without mapping symbols
      can pick up a text mapping symbol of a preceeding section.  */
   if (!found)
@@ -941,7 +1065,7 @@ riscv_search_mapping_symbol (bfd_vma memaddr,
 	  if (addr < (info->section ? info->section->vma : 0))
 	    break;
 	  /* Stop searching once we find the closed mapping symbol.  */
-	  if (riscv_get_map_state (n, &mstate, info))
+	  if (riscv_is_valid_mapping_symbol (n, info))
 	    {
 	      symbol = n;
 	      found = true;
@@ -952,6 +1076,8 @@ riscv_search_mapping_symbol (bfd_vma memaddr,
 
   if (found)
     {
+      riscv_update_map_state (symbol, &mstate, info);
+
       /* Find the next mapping symbol to determine the boundary of this mapping
 	 symbol.  */
 
@@ -1007,11 +1133,12 @@ riscv_data_length (bfd_vma memaddr,
 	{
 	  bfd_vma addr = bfd_asymbol_value (info->symtab[n]);
 	  if (addr > memaddr
-	      && riscv_get_map_state (n, &m, info))
+	      && riscv_is_valid_mapping_symbol (n, info))
 	    {
 	      if (addr - memaddr < length)
 		length = addr - memaddr;
 	      found = true;
+	      riscv_update_map_state (n, &m, info);
 	      break;
 	    }
 	}

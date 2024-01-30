@@ -1,5 +1,5 @@
 /* Table of opcodes for the PA-RISC.
-   Copyright (C) 1990-2023 Free Software Foundation, Inc.
+   Copyright (C) 1990-2024 Free Software Foundation, Inc.
 
    Contributed by the Center for Software Science at the
    University of Utah (pa-gdb-bugs@cs.utah.edu).
@@ -33,7 +33,7 @@
  * controled by the nullification bit, and conditional, which depends
  * on the direction of the branch and its success or failure.
  *
- * NONE is unfortunately #defined in the hiux system opcode files.
+ * NONE is unfortunately #defined in the hiux system include files.  
  * #undef it away.
  */
 #undef NONE

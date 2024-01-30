@@ -1,6 +1,6 @@
 /* LoongArch assembler/disassembler support.
 
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
 
    This file is part of GNU Binutils.
@@ -29,6 +29,24 @@ extern "C"
 #endif
 
   #define LARCH_NOP 0x03400000
+  #define LARCH_B 0x50000000
+  /* BCEQZ/BCNEZ.  */
+  #define LARCH_FLOAT_BRANCH 0x48000000
+  #define LARCH_BRANCH_OPCODE_MASK 0xfc000000
+  #define LARCH_BRANCH_INVERT_BIT 0x04000000
+  #define LARCH_FLOAT_BRANCH_INVERT_BIT 0x00000100
+
+  #define ENCODE_BRANCH16_IMM(x) (((x) >> 2) << 10)
+
+  #define OUT_OF_RANGE(value, bits, align)	\
+    ((value) < (-(1 << ((bits) - 1) << align)) 	\
+      || (value) > ((((1 << ((bits) - 1)) - 1) << align)))
+
+  #define LARCH_LU12I_W 0x14000000
+  #define LARCH_ORI 0x03800000
+  #define LARCH_LD_D 0x28c00000
+  #define LARCH_RD_A0 0x04
+  #define LARCH_RD_RJ_A0 0x084
 
   typedef uint32_t insn_t;
 
@@ -48,7 +66,7 @@ args : token* end
 token : ','
 | '('
 | ')'
-| iden	     // maybe a label (opcode at least one alphabet),
+| iden	     // maybe a label (include at least one alphabet),
 		      maybe a number, maybe a expr
 | regname
 
@@ -177,11 +195,12 @@ dec2 : [1-9][0-9]?
   extern void loongarch_eliminate_adjacent_repeat_char (char *dest, char c);
 
   extern const char *const loongarch_r_normal_name[32];
-  extern const char *const loongarch_r_lp64_name[32];
-  extern const char *const loongarch_r_lp64_name_deprecated[32];
+  extern const char *const loongarch_r_alias[32];
+  extern const char *const loongarch_r_alias_1[32];
+  extern const char *const loongarch_r_alias_deprecated[32];
   extern const char *const loongarch_f_normal_name[32];
-  extern const char *const loongarch_f_lp64_name[32];
-  extern const char *const loongarch_f_lp64_name_deprecated[32];
+  extern const char *const loongarch_f_alias[32];
+  extern const char *const loongarch_f_alias_deprecated[32];
   extern const char *const loongarch_fc_normal_name[4];
   extern const char *const loongarch_fc_numeric_name[4];
   extern const char *const loongarch_c_normal_name[8];
@@ -236,6 +255,7 @@ dec2 : [1-9][0-9]?
 #define ase_gabs	isa.use_la_global_with_abs
 
     int relax;
+    int thin_add_sub;
   } LARCH_opts;
 
   extern size_t loongarch_insn_length (insn_t insn);

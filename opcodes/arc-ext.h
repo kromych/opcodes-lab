@@ -1,5 +1,5 @@
 /* ARC target-dependent stuff.  Extension data structures.
-   Copyright (C) 1995-2023 Free Software Foundation, Inc.
+   Copyright (C) 1995-2024 Free Software Foundation, Inc.
 
    This file is part of libopcodes.
 
@@ -23,7 +23,7 @@
   '.gnu.linkonce.arcextmap.<type>.<N>' sections in the ELF file which
   is identified by the bfd parameter to the build_ARC_extmap function.
 
-  These extensions may opcode:
+  These extensions may include:
 	 core registers
 	 auxiliary registers
 	 instructions

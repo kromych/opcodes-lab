@@ -1,5 +1,5 @@
 /* Opcode table for m680[012346]0/m6888[12]/m68851/mcf5200.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
 
    This file is part of the GNU opcodes library.
 
@@ -30,7 +30,7 @@
 
 /* Format strings consist of pairs of characters.  The first describes
    the type of the operand and the second describes the encoding.
-   opcode/opcodes/m68k.h describes them in detail.  */
+   include/opcodes/m68k.h describes them in detail.  */
 
 const struct m68k_opcode m68k_opcodes[] =
 {

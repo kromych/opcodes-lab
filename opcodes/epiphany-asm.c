@@ -5,7 +5,7 @@
    THIS FILE IS MACHINE GENERATED WITH CGEN.
    - the resultant file is machine generated, cgen-asm.in isn't
 
-   Copyright (C) 1996-2023 Free Software Foundation, Inc.
+   Copyright (C) 1996-2024 Free Software Foundation, Inc.
 
    This file is part of libopcodes.
 
@@ -727,7 +727,7 @@ parse_insn_normal (CGEN_CPU_DESC cd,
 	++ str;
 
       if (* str != '\0')
-	return _("junk at end of line"); /* FIXME: would like to opcode `str' */
+	return _("junk at end of line"); /* FIXME: would like to include `str' */
 
       return NULL;
     }

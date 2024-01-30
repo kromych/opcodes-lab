@@ -1,5 +1,5 @@
 /* aarch64-dis.h -- Header file for aarch64-dis.c and aarch64-dis-2.c.
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of the GNU opcodes library.
@@ -117,6 +117,7 @@ AARCH64_DECL_OPD_EXTRACTOR (ext_sve_float_half_one);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sve_float_half_two);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sve_float_zero_one);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sve_index);
+AARCH64_DECL_OPD_EXTRACTOR (ext_sve_index_imm);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sve_limm_mov);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sve_quad_index);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sve_reglist);
@@ -124,6 +125,8 @@ AARCH64_DECL_OPD_EXTRACTOR (ext_sve_strided_reglist);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sve_scale);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sve_shlimm);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sve_shrimm);
+AARCH64_DECL_OPD_EXTRACTOR (ext_sme_za_vrs1);
+AARCH64_DECL_OPD_EXTRACTOR (ext_sme_za_vrs2);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sme_za_hv_tiles);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sme_za_hv_tiles_range);
 AARCH64_DECL_OPD_EXTRACTOR (ext_sme_za_list);
@@ -136,6 +139,10 @@ AARCH64_DECL_OPD_EXTRACTOR (ext_imm_rotate2);
 AARCH64_DECL_OPD_EXTRACTOR (ext_x0_to_x30);
 AARCH64_DECL_OPD_EXTRACTOR (ext_simple_index);
 AARCH64_DECL_OPD_EXTRACTOR (ext_plain_shrimm);
+AARCH64_DECL_OPD_EXTRACTOR (ext_sve_reglist_zt);
+AARCH64_DECL_OPD_EXTRACTOR (ext_rcpc3_addr_opt_offset);
+AARCH64_DECL_OPD_EXTRACTOR (ext_rcpc3_addr_offset);
+
 
 #undef AARCH64_DECL_OPD_EXTRACTOR
 

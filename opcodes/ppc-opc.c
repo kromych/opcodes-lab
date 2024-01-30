@@ -1,5 +1,5 @@
 /* ppc-opc.c -- PowerPC opcode list
-   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+   Copyright (C) 1994-2024 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Cygnus Support
 
    This file is part of the GNU opcodes library.
@@ -4097,7 +4097,7 @@ const unsigned int num_powerpc_operands = ARRAY_SIZE (powerpc_operands);
 #define EBD8IO1_MASK 0xf800
 /* A mask that includes BO32 and excludes BI32.  */
 #define EBD8IO2_MASK 0xfc00
-/* A mask that opcode BO32 AND BI32.  */
+/* A mask that include BO32 AND BI32.  */
 #define EBD8IO3_MASK 0xff00
 
 /* A BD15 form instruction.  */

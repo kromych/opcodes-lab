@@ -1,5 +1,5 @@
 /* Definitions for opcode table for the sparc.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler, GDB, the GNU debugger, and
    the GNU Binutils.
@@ -139,7 +139,7 @@ typedef struct
 #define F_PREF_ALIAS	(F_ALIAS|F_PREFERRED)
 
 /* These must match the ELF_SPARC_HWCAP_* and ELF_SPARC_HWCAP2_*
-   values precisely.  See opcode/elf/sparc.h.  */
+   values precisely.  See include/elf/sparc.h.  */
 #define HWCAP_MUL32	0x00000001 /* umul/umulcc/smul/smulcc insns */
 #define HWCAP_DIV32	0x00000002 /* udiv/udivcc/sdiv/sdivcc insns */
 #define HWCAP_FSMULD	0x00000004 /* 'fsmuld' insn */

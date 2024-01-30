@@ -1,5 +1,5 @@
 /* s12z-decode.c -- Freescale S12Z disassembly
-   Copyright (C) 2018-2023 Free Software Foundation, Inc.
+   Copyright (C) 2018-2024 Free Software Foundation, Inc.
 
    This file is part of the GNU opcodes library.
 
@@ -102,7 +102,7 @@ static const  struct opr_pb opr_pb[] = {
 };
 
 /* Return the number of bytes in a OPR operand, including the XB postbyte.
-   It does not opcode any preceeding opcodes. */
+   It does not include any preceeding opcodes. */
 static int
 x_opr_n_bytes (struct mem_read_abstraction_base *mra, int offset)
 {
