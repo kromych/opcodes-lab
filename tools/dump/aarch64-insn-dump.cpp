@@ -1175,7 +1175,7 @@ std::string to_str_array(const std::vector<std::string> &list,
             joined += "\"";
 
         if (list.size() - i != 1) {
-            joined += ",";
+            joined += ',';
         }
     }
     joined += "]";
@@ -1243,7 +1243,15 @@ std::string flags_str(uint64_t flags) {
     if (flags & F_RCPC3_SIZE)
         sflags.emplace_back("HAS_RCPC3_SIZE");
 
-    return to_str_array(sflags);
+    std::string joined;
+    for (auto i = 0; i < sflags.size(); ++i) {
+        joined += sflags[i];
+        if (sflags.size() - i != 1) {
+            joined += '|';
+        }
+    }
+
+    return joined;
 }
 
 const char *field_name(aarch64_field_kind f) {
@@ -1935,7 +1943,7 @@ int main() {
 
         printf("\t},\n");
 
-        printf("\t\"flags\": %s,\n", flags_str(x.flags).c_str());
+        printf("\t\"flags\": \"%s\",\n", flags_str(x.flags).c_str());
 
         if (len - i != 2)
             printf("\t\"index\": %d },\n", i);
