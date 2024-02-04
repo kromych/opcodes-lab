@@ -1843,8 +1843,16 @@ int main() {
                    to_str_array(aliases, false).c_str());
         }
 
+        uint32_t mask = x.mask;
+
+        const uint32_t lost_dont_care = x.opcode ^ (x.mask & x.opcode); // == opcode & !mask
+        if (lost_dont_care) {
+            fprintf(stderr, "%s: lost_dont_care: %08x\n", x.name, lost_dont_care);
+            mask |= lost_dont_care;
+        }
+
         printf("\t\"opcode\": \"0x%08x\",\n", x.opcode);
-        printf("\t\"mask\": \"0x%08x\",\n", x.mask);
+        printf("\t\"mask\": \"0x%08x\",\n", mask);
         printf("\t\"class\": \"%s\",\n", iclass_name(iclass));
         printf("\t\"feature_set\": \"%s\",\n", feature_set_name(x.avariant));
         printf("\t\"description\": \"%s\",\n", iclass_description(iclass));
