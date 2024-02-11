@@ -1897,7 +1897,7 @@ int main() {
             }
         }
 
-        printf("\t\"operands\": {\n");
+        printf("\t\"operands\": [\n");
 
         for (auto oi = 0; oi < operands.size(); ++oi) {
             const auto &o = operands[oi];
@@ -1910,7 +1910,8 @@ int main() {
                 oquals.push_back(q[oi]);
             }
 
-            printf("\t\t\"%s\": {\n", o.c_str());
+            printf("\t\t{\n");
+            printf("\t\t\t\"kind\": \"%s\",\n", o.c_str());
             printf("\t\t\t\"class\": \"%s\",\n",
                    operand_class_name(operand_info[oi].op_class));
             printf("\t\t\t\"qualifiers\": %s,\n", to_str_array(oquals).c_str());
@@ -1941,7 +1942,7 @@ int main() {
             printf("\n");
         }
 
-        printf("\t},\n");
+        printf("\t],\n");
 
         printf("\t\"flags\": \"%s\",\n", flags_str(x.flags).c_str());
 
