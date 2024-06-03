@@ -1882,9 +1882,6 @@ int main() {
         std::vector<std::vector<std::string>> quals;
         {
             for (const auto &ql : x.qualifiers_list) {
-                if (quals.size() + 1 >= operands.size())
-                    break;
-
                 std::vector<std::string> qs;
                 for (const auto &q : ql) {
                     if (!q)
