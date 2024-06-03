@@ -23,6 +23,23 @@ There are no guarantees of any kind about the content of the result file.
 You are using it at your own risk; any losses related to using it are on you
 and you only. You sure can keep the profits to yourself either :).
 
+## How to use
+
+### Build
+
+```sh
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=c++ ..
+make
+```
+
+### Run
+
+```sh
+./tools/dump/aarch64-insn-dump | jq "."
+```
+
 ## Related art
 
 These are very mature projects with a much broader scope, rigorous testing,
