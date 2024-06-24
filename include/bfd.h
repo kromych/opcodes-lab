@@ -23,6 +23,13 @@
 #ifndef __BFD_H_SEEN__
 #define __BFD_H_SEEN__
 
+#define DEBUG_AARCH64
+#define ARRAY_SIZE(a) (sizeof((a))/sizeof((a)[0]))
+#define ISXDIGIT(d) ( ( (d) >= '0' && (d) <= '9' ) || ( (d) >= 'a' && (d) <= 'f' ) || ( (d) >= 'A' && (d) <= 'F' ) )
+
+#define XDELETE(P)		free ((void*) (P))
+#define XCNEWVEC(T, N)		((T *) calloc ((N), sizeof (T)))
+
 #ifdef __cplusplus
 extern "C" {
 #endif

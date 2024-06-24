@@ -21,14 +21,11 @@
 #include "sysdep.h"
 #include <stdint.h>
 #include "disassemble.h"
-#include "libiberty.h"
 #include "opintl.h"
 #include "aarch64-dis.h"
-#include "elf-bfd.h"
-#include "safe-ctype.h"
-#include "obstack.h"
+#include <obstack.h>
 
-#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_alloc malloc
 #define obstack_chunk_free free
 
 #define INSNLEN 4
@@ -100,7 +97,8 @@ parse_aarch64_dis_option (const char *option, unsigned int len ATTRIBUTE_UNUSED)
 #endif /* DEBUG_AARCH64 */
 
   /* Invalid option.  */
-  opcodes_error_handler (_("unrecognised disassembler option: %s"), option);
+  fprintf(stderr, "unrecognised disassembler option: %s", option);
+  exit(-1);
 }
 
 static void
@@ -4145,42 +4143,6 @@ static int
 get_sym_code_type (struct disassemble_info *info, int n,
 		   enum map_type *map_type)
 {
-  asymbol * as;
-  elf_symbol_type *es;
-  unsigned int type;
-  const char *name;
-
-  /* If the symbol is in a different section, ignore it.  */
-  if (info->section != NULL && info->section != info->symtab[n]->section)
-    return false;
-
-  if (n >= info->symtab_size)
-    return false;
-
-  as = info->symtab[n];
-  if (bfd_asymbol_flavour (as) != bfd_target_elf_flavour)
-    return false;
-  es = (elf_symbol_type *) as;
-
-  type = ELF_ST_TYPE (es->internal_elf_sym.st_info);
-
-  /* If the symbol has function type then use that.  */
-  if (type == STT_FUNC)
-    {
-      *map_type = MAP_INSN;
-      return true;
-    }
-
-  /* Check for mapping symbols.  */
-  name = bfd_asymbol_name(info->symtab[n]);
-  if (name[0] == '$'
-      && (name[1] == 'x' || name[1] == 'd')
-      && (name[2] == '\0' || name[2] == '.'))
-    {
-      *map_type = (name[1] == 'x' ? MAP_INSN : MAP_DATA);
-      return true;
-    }
-
   return false;
 }
 
@@ -4192,15 +4154,8 @@ get_sym_code_type (struct disassemble_info *info, int n,
 static void
 select_aarch64_variant (unsigned mach)
 {
-  switch (mach)
-    {
-    case bfd_mach_aarch64_8R:
-      AARCH64_SET_FEATURE (arch_variant, AARCH64_ARCH_V8R);
-      break;
-    default:
-      arch_variant = (aarch64_feature_set) AARCH64_ALL_FEATURES;
-      AARCH64_CLEAR_FEATURE (arch_variant, arch_variant, V8R);
-    }
+  arch_variant = (aarch64_feature_set) AARCH64_ALL_FEATURES;
+  AARCH64_CLEAR_FEATURE (arch_variant, arch_variant, V8R);
 }
 
 /* Entry-point of the AArch64 disassembler.  */
@@ -4235,9 +4190,6 @@ print_insn_aarch64 (bfd_vma pc,
       set_features = true;
     }
 
-  /* Aarch64 instructions are always little-endian */
-  info->endian_code = BFD_ENDIAN_LITTLE;
-
   /* Default to DATA.  A text section is required by the ABI to contain an
      INSN mapping symbol at the start.  A data section has no such
      requirement, hence if no mapping symbol is found the section must
@@ -4246,127 +4198,7 @@ print_insn_aarch64 (bfd_vma pc,
      attributes to determine the default.  If we have no section default to
      INSN as well, as we may be disassembling some raw bytes on a baremetal
      HEX file or similar.  */
-  enum map_type type = MAP_DATA;
-  if ((info->section && info->section->flags & SEC_CODE) || !info->section)
-    type = MAP_INSN;
-
-  /* First check the full symtab for a mapping symbol, even if there
-     are no usable non-mapping symbols for this address.  */
-  if (info->symtab_size != 0
-      && bfd_asymbol_flavour (*info->symtab) == bfd_target_elf_flavour)
-    {
-      int last_sym = -1;
-      bfd_vma addr, section_vma = 0;
-      bool can_use_search_opt_p;
-      int n;
-
-      if (pc <= last_mapping_addr)
-	last_mapping_sym = -1;
-
-      /* Start scanning at the start of the function, or wherever
-	 we finished last time.  */
-      n = info->symtab_pos + 1;
-
-      /* If the last stop offset is different from the current one it means we
-	 are disassembling a different glob of bytes.  As such the optimization
-	 would not be safe and we should start over.  */
-      can_use_search_opt_p = last_mapping_sym >= 0
-			     && info->stop_offset == last_stop_offset;
-
-      if (n >= last_mapping_sym && can_use_search_opt_p)
-	n = last_mapping_sym;
-
-      /* Look down while we haven't passed the location being disassembled.
-	 The reason for this is that there's no defined order between a symbol
-	 and an mapping symbol that may be at the same address.  We may have to
-	 look at least one position ahead.  */
-      for (; n < info->symtab_size; n++)
-	{
-	  addr = bfd_asymbol_value (info->symtab[n]);
-	  if (addr > pc)
-	    break;
-	  if (get_sym_code_type (info, n, &type))
-	    {
-	      last_sym = n;
-	      found = true;
-	    }
-	}
-
-      if (!found)
-	{
-	  n = info->symtab_pos;
-	  if (n >= last_mapping_sym && can_use_search_opt_p)
-	    n = last_mapping_sym;
-
-	  /* No mapping symbol found at this address.  Look backwards
-	     for a preceeding one, but don't go pass the section start
-	     otherwise a data section with no mapping symbol can pick up
-	     a text mapping symbol of a preceeding section.  The documentation
-	     says section can be NULL, in which case we will seek up all the
-	     way to the top.  */
-	  if (info->section)
-	    section_vma = info->section->vma;
-
-	  for (; n >= 0; n--)
-	    {
-	      addr = bfd_asymbol_value (info->symtab[n]);
-	      if (addr < section_vma)
-		break;
-
-	      if (get_sym_code_type (info, n, &type))
-		{
-		  last_sym = n;
-		  found = true;
-		  break;
-		}
-	    }
-	}
-
-      last_mapping_sym = last_sym;
-      last_type = type;
-      last_stop_offset = info->stop_offset;
-
-      /* Look a little bit ahead to see if we should print out
-	 less than four bytes of data.  If there's a symbol,
-	 mapping or otherwise, after two bytes then don't
-	 print more.  */
-      if (last_type == MAP_DATA)
-	{
-	  size = 4 - (pc & 3);
-	  for (n = last_sym + 1; n < info->symtab_size; n++)
-	    {
-	      addr = bfd_asymbol_value (info->symtab[n]);
-	      if (addr > pc)
-		{
-		  if (addr - pc < size)
-		    size = addr - pc;
-		  break;
-		}
-	    }
-	  /* If the next symbol is after three bytes, we need to
-	     print only part of the data, so that we can use either
-	     .byte or .short.  */
-	  if (size == 3)
-	    size = (pc & 1) ? 1 : 2;
-	}
-    }
-  else
-    last_type = type;
-
-  /* PR 10263: Disassemble data if requested to do so by the user.  */
-  if (last_type == MAP_DATA && ((info->flags & DISASSEMBLE_DATA) == 0))
-    {
-      /* size was set above.  */
-      info->bytes_per_chunk = size;
-      info->display_endian = info->endian;
-      printer = print_insn_data;
-    }
-  else
-    {
-      info->bytes_per_chunk = size = INSNLEN;
-      info->display_endian = info->endian_code;
-      printer = print_insn_aarch64_word;
-    }
+  enum map_type type = MAP_INSN;
 
   status = (*info->read_memory_func) (pc, buffer, size, info);
   if (status != 0)
@@ -4375,8 +4207,12 @@ print_insn_aarch64 (bfd_vma pc,
       return -1;
     }
 
-  data = bfd_get_bits (buffer, size * 8,
-		       info->display_endian == BFD_ENDIAN_BIG);
+    info->bytes_per_chunk = size = INSNLEN;
+    printer = print_insn_aarch64_word;
+    data = (unsigned long)(buffer[0]) |
+           ((unsigned long)(buffer[1]) << 8) |
+           ((unsigned long)(buffer[2]) << 16) |
+           ((unsigned long)(buffer[3]) << 24);
 
   (*printer) (pc, data, info, &errors);
 
@@ -4409,3 +4245,105 @@ with the -M switch (multiple options should be separated by commas):\n"));
 
   fprintf (stream, _("\n"));
 }
+
+#ifdef BUILDING_DIS_TOOL
+
+#include <errno.h>
+
+int read_memory_func (bfd_vma memaddr, bfd_byte *myaddr, unsigned int length,
+     struct disassemble_info *dinfo)
+{
+    if (!dinfo || !dinfo->application_data)
+        return -1;
+
+    memcpy(myaddr, dinfo->application_data, length);
+    return 0;
+}
+
+void memory_error_func (int status, bfd_vma memaddr, struct disassemble_info *dinfo)
+{
+    fprintf(stderr, "memory access error at %#llx\n", memaddr);
+}
+
+void print_address_func (bfd_vma addr, struct disassemble_info *dinfo) {
+    fprintf(stdout, "%#llx: ", addr);
+}
+
+static int
+fprintf_func (void *arg, const char *fmt, ...)
+{
+    char buf[512];
+    va_list vp;
+    va_start (vp, fmt);
+    int cnt = vsnprintf (buf, sizeof (buf), fmt, vp);
+    va_end (vp);
+
+    fprintf(stdout, "%s", buf);
+    return cnt;
+}
+
+static int
+fprintf_styled_func (void *arg, enum disassembler_style st ATTRIBUTE_UNUSED,
+                    const char *fmt, ...)
+{
+    char buf[512];
+    va_list vp;
+    va_start (vp, fmt);
+    int cnt = vsnprintf (buf, sizeof (buf), fmt, vp);
+    va_end (vp);
+
+    fprintf(stdout, "%s", buf);
+    return cnt;
+}
+
+int main (int argc, char** argv)
+{
+    struct disassemble_info di = {};
+    bfd_vma pc = 0;
+    unsigned long insn = 0;
+
+    if (argc < 2) {
+        fprintf(stderr, "Usage: [-v] [-a <pc_hex>] insn_hex");
+        exit(-1);
+    }
+
+    ++argv;
+    for (; *argv; ++argv) {
+        char* arg = *argv;
+        if (!strncmp(arg, "-v", 2)) {
+            debug_dump = true;
+            continue;
+        }
+
+        if (!strncmp(arg, "-a", 2)) {
+            arg = *++argv;
+            pc = strtoll(arg, NULL, 16);
+            if (errno) {
+                fprintf(stderr, "Invalid hex number for PC: %s\n", arg);
+                exit(-2);
+            }
+            continue;
+        }
+
+        insn = strtol(arg, NULL, 16);
+        if (errno) {
+            fprintf(stderr, "Invalid hex number for the instruction: %s\n", arg);
+            exit(-3);
+        }
+    }
+
+    di.fprintf_styled_func = fprintf_styled_func;
+    di.fprintf_func = fprintf_func;
+    di.read_memory_func = read_memory_func;
+    di.memory_error_func = memory_error_func;
+    di.print_address_func = print_address_func;
+    di.application_data = &insn;
+
+    no_aliases = true;
+
+    print_insn_aarch64(pc, &di);
+
+    return 0;
+}
+
+#endif

@@ -108,9 +108,7 @@ extern disassembler_ftype riscv_get_disassembler (bfd *);
 
 extern void disassemble_free_riscv (disassemble_info *);
 
-extern void ATTRIBUTE_NORETURN opcodes_assert (const char *, int);
-
 #define OPCODES_ASSERT(x) \
-  do { if (!(x)) opcodes_assert (__FILE__, __LINE__); } while (0)
+  do { if (!(x)) assert (__FILE__, __LINE__); } while (0)
 
 #endif /* DISASSEMBLE_H */

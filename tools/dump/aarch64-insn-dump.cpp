@@ -10,7 +10,6 @@ extern "C" {
 
 #include "aarch64-dis.h"
 #include "aarch64-insn-bits.h"
-#include "aarch64-opc.h"
 #include "aarch64-tbl.h"
 }
 

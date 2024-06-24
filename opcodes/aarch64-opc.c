@@ -25,9 +25,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <inttypes.h>
-
 #include "opintl.h"
-#include "libiberty.h"
 
 #include "aarch64-opc.h"
 
