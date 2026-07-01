@@ -1,6 +1,7 @@
 .idea/
 .vscode/
 cmake-build-*/*
+debug/
 build/
 .DS_Store
 *.json

@@ -2,7 +2,7 @@
 
 ## About this project
 
-This repo contains code derived from `binutils`'es `libopcodes`, v.2.42. That said,
+This repo contains code derived from `binutils`'es `libopcodes`, v.2.46. That said,
 if you fork the code, be sure to license the fork under the GPL v3.
 
 The goal is to generate a JSON file describing ARM64 instructions to be able to 
